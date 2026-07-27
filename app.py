@@ -683,13 +683,12 @@ elif st.session_state["stage"] == "learning":
           report_prompt = (
               f"Generate a comprehensive learning report for module"
               f" '{active_mod['title']}' in {st.session_state['target_lang']} at"
-              f" level {st.session_state['current_level']}. Provide the response"
-              " in Turkish with these exact prefixes:\nKELIMELER_VE_KALIPLAR:"
-              " (List all specific words, vocabulary items, and sentence"
-              " patterns learned in this module)\nDIL_BILGISI: (Specify the exact"
-              " grammar terms, structures, and rules learned)\nBOLUM_PORTRESI:"
-              " (Write a vivid, atmospheric module portrait describing the"
-              " thematic scope, mindset, and context of this specific module)"
+              f" level {st.session_state['current_level']}. "
+              "Return strictly a valid JSON object with these exact keys: "
+              "\"kelimeler_ve_kaliplar\" (string containing list of words and patterns learned), "
+              "\"dil_bilgisi\" (string containing grammar terms and structures), "
+              "\"bolum_portresi\" (string describing atmospheric module portrait and context)."
+              " Do not include any extra markdown formatting or backticks around the JSON."
           )
           try:
             res = client.chat.completions.create(
@@ -697,26 +696,27 @@ elif st.session_state["stage"] == "learning":
                 messages=[{"role": "user", "content": report_prompt}],
                 temperature=0.4,
             )
-            report_text = res.choices[0].message.content
+            raw_text = res.choices[0].message.content.strip()
+            if raw_text.startswith("```json"):
+              raw_text = raw_text[7:]
+            if raw_text.startswith("```"):
+              raw_text = raw_text[3:]
+            if raw_text.endswith("```"):
+              raw_text = raw_text[:-3]
 
-            k_v_k = "Modül kelime ve kalıpları başarıyla işlendi."
-            d_b = active_mod["skill"]
-            b_p = (
-                "Bu modül, hedef dil yetkinliğini artırmaya yönelik özel bir"
-                " tema sunar."
+            report_json = json.loads(raw_text.strip())
+            k_v_k = report_json.get(
+                "kelimeler_ve_kaliplar", "Modül kelime ve kalıpları işlendi."
             )
-
-            for line in report_text.split("\n"):
-              if "KELIMELER_VE_KALIPLAR:" in line:
-                k_v_k = line.replace("KELIMELER_VE_KALIPLAR:", "").strip()
-              elif "DIL_BILGISI:" in line:
-                d_b = line.replace("DIL_BILGISI:", "").strip()
-              elif "BOLUM_PORTRESI:" in line:
-                b_p = line.replace("BOLUM_PORTRESI:", "").strip()
+            d_b = report_json.get("dil_bilgisi", active_mod["skill"])
+            b_p = report_json.get(
+                "bolum_portresi",
+                "Bu bölüm, akıcılık yolculuğunda kilit bir duraktır.",
+            )
           except Exception:
-            k_v_k = "Kelime ve kalıplar başarıyla tamamlandı."
+            k_v_k = "Modül kelime ve kalıpları başarıyla tamamlandı."
             d_b = active_mod["skill"]
-            b_p = "Bu bölüm, öğrencinin akıcılık yolculuğunda kilit bir duraktır."
+            b_p = "Bu bölüm, hedef dil yetkinliğini artırmaya yönelik özel bir tema sunar."
 
         st.session_state["current_report"] = {
             "module_title": active_mod["title"],
@@ -757,17 +757,17 @@ elif st.session_state["stage"] == "report_card":
         <hr>
         
         <h4 style="color: #2e7d32;">🎨 Bölümün Portresi</h4>
-        <div style="background: #ffffff; padding: 15px; border-radius: 8px; border-left: 5px solid #2e7d32; margin-bottom: 15px;">
+        <div style="background: #ffffff; padding: 15px; border-radius: 8px; border-left: 5px solid #2e7d32; margin-bottom: 15px; color: #333333;">
             {report.get('bolum_portresi')}
         </div>
 
         <h4 style="color: #2e7d32;">📖 Öğrenilen Kelimeler ve Cümle Kalıpları</h4>
-        <div style="background: #ffffff; padding: 15px; border-radius: 8px; border-left: 5px solid #ffb300; margin-bottom: 15px;">
+        <div style="background: #ffffff; padding: 15px; border-radius: 8px; border-left: 5px solid #ffb300; margin-bottom: 15px; color: #333333;">
             {report.get('kelimeler_ve_kaliplar')}
         </div>
 
         <h4 style="color: #2e7d32;">⚙️ Öğrenilen Dil Bilgisi Terimleri ve Yapılar</h4>
-        <div style="background: #ffffff; padding: 15px; border-radius: 8px; border-left: 5px solid #1976d2; margin-bottom: 15px;">
+        <div style="background: #ffffff; padding: 15px; border-radius: 8px; border-left: 5px solid #1976d2; margin-bottom: 15px; color: #333333;">
             {report.get('dil_bilgisi')}
         </div>
         
