@@ -49,6 +49,10 @@ if "achievements" not in st.session_state:
   st.session_state["achievements"] = []
 if "current_report" not in st.session_state:
   st.session_state["current_report"] = {}
+if "quiz_feedback" not in st.session_state:
+  st.session_state["quiz_feedback"] = ""
+if "writing_feedback" not in st.session_state:
+  st.session_state["writing_feedback"] = ""
 
 
 # --- AŞAMA 1: TANIŞMA VE DİL SEÇİMİ ---
@@ -57,7 +61,7 @@ if st.session_state["stage"] == "welcome":
   st.markdown(
       "Adım adım ilerleyen 10 soruluk kapsamlı analiz sınavımızla; hem"
       " **dil seviyenizi** hem de **kişilik ve öğrenme stilinizi** belirliyoruz."
-      " Dilediğiniz takdirde seviyenizi sonradan değiştirebilirsiniz."
+      " Her cevap anında yapay zeka tarafından değerlendirilir."
   )
 
   col1, col2 = st.columns(2)
@@ -291,7 +295,6 @@ elif st.session_state["stage"] == "goal_setup":
   )
 
   with st.form("story_goal_form"):
-    # Kullanıcının seviyeyi manuel değiştirebilmesi (Override)
     level_options = ["A1", "A2", "B1", "B2"]
     current_lvl_idx = (
         level_options.index(st.session_state["current_level"])
@@ -326,7 +329,6 @@ elif st.session_state["stage"] == "goal_setup":
         "Kişiselleştirilmiş Yoğun Müfredatımı Oluştur 🚀"
     )
     if goal_submitted:
-      # Kullanıcının manuel seçtiği seviyeyi kaydet
       st.session_state["current_level"] = selected_level_override
       st.session_state["user_goal"] = goal_choice
       st.session_state["user_dream"] = (
@@ -392,15 +394,16 @@ elif st.session_state["stage"] == "dashboard":
       st.markdown(f"Durum: **{mod['status']}**")
     with col3:
       if mod["status"] in ["Açık", "Tamamlandı"]:
-        btn_txt = "Dese Başla 📖" if mod["status"] == "Açık" else "Tekrar Et 🔄"
+        btn_txt = "Derse Başla 📖" if mod["status"] == "Açık" else "Tekrar Et 🔄"
         if st.button(btn_txt, key=f"mod_btn_{idx}", type="primary"):
           st.session_state["current_module_idx"] = idx
           st.session_state["lesson_step"] = 1
+          st.session_state["quiz_feedback"] = ""
+          st.session_state["writing_feedback"] = ""
           for key in [
               "reading_content",
               "vocab_content",
               "quiz_content",
-              "writing_checked",
           ]:
             if key in st.session_state:
               del st.session_state[key]
@@ -410,7 +413,7 @@ elif st.session_state["stage"] == "dashboard":
         st.info("🔒 Kilitli")
     st.markdown("---")
 
-# --- AŞAMA 5: KAPSAMLI DERS İŞLEŞİ (LEARNING STAGE) ---
+# --- AŞAMA 5: KAPSAMLI DERS İŞLEYİŞİ (LEARNING STAGE) ---
 elif st.session_state["stage"] == "learning":
   mod_idx = st.session_state["current_module_idx"]
   active_mod = st.session_state["modules"][mod_idx]
@@ -421,7 +424,8 @@ elif st.session_state["stage"] == "learning":
       step / 4,
       text=(
           f"Eğitim İlerlemesi: Adım {step} / 4 ("
-          "1:Okuma->2:Kelime/Kalıp->3:Test->4:Yazma)"
+          "1:Okuma->2:Kelime/Kalıp->3:Test ve Değerlendirme->4:Yazma ve"
+          " Düzeltme)"
       ),
   )
 
@@ -498,12 +502,12 @@ elif st.session_state["stage"] == "learning":
         st.session_state["lesson_step"] = 3
         st.rerun()
 
-  # --- ADIM 3: İNTERAKTİF TEST VE BOŞLUK DOLDURMA ---
+  # --- ADIM 3: İNTERAKTİF TEST VE ANLIK DEĞERLENDİRME ---
   elif step == 3:
     st.subheader(
-        "🧩 3. Bölüm: Bilgiyi Pekiştirme (Boşluk Doldurma ve Çoktan Seçmeli)"
+        "🧩 3. Bölüm: Bilgiyi Pekiştirme ve Anlık Yapay Zeka Değerlendirmesi"
     )
-    st.markdown("Öğrendiklerinizi test etme zamanı.")
+    st.markdown("Öğrendiklerinizi test edin, cevaplarınız anında değerlendirilsin.")
 
     if "quiz_content" not in st.session_state:
       prompt_quiz = (
@@ -528,6 +532,32 @@ elif st.session_state["stage"] == "learning":
         "Cevaplarınızı giriniz (Örn: 1-A, 2-C):", key="quiz_input_field"
     )
 
+    if st.button("Cevaplarımı Değerlendir ve Hataları Düzelt 🔍"):
+      if user_ans_q3.strip():
+        eval_prompt = (
+            f"Evaluate the user's quiz answers: '{user_ans_q3}' against the"
+            f" following quiz content:\n{st.session_state['quiz_content']}\nProvide"
+            " a clear, encouraging evaluation in Turkish. Point out which ones"
+            " are correct, which ones are incorrect, explain why, and provide"
+            " corrections for any mistakes."
+        )
+        try:
+          res = client.chat.completions.create(
+              model="llama-3.3-70b-versatile",
+              messages=[{"role": "user", "content": eval_prompt}],
+              temperature=0.3,
+          )
+          st.session_state["quiz_feedback"] = res.choices[0].message.content
+        except Exception:
+          st.session_state["quiz_feedback"] = (
+              "Değerlendirme yapılırken hata oluştu."
+          )
+      else:
+        st.warning("Lütfen değerlendirilmesi için cevaplarınızı yazın.")
+
+    if st.session_state["quiz_feedback"]:
+      st.info(st.session_state["quiz_feedback"])
+
     st.markdown("<br>", unsafe_allow_html=True)
     col1, col2 = st.columns(2)
     with col1:
@@ -540,15 +570,17 @@ elif st.session_state["stage"] == "learning":
           st.session_state["lesson_step"] = 4
           st.rerun()
         else:
-          st.warning("Lütfen test cevaplarınızı yazın.")
+          st.warning("Lütfen test cevaplarınızı giriniz.")
 
-  # --- ADIM 4: YAZMA VE ÜRETİM PRATİĞİ ---
+  # --- ADIM 4: YAZMA VE ANLIK DÜZELTME PRATİĞİ ---
   elif step == 4:
-    st.subheader("✍️ 4. Bölüm: Aktif Yazma ve Cümle Üretimi")
+    st.subheader(
+        "✍️ 4. Bölüm: Aktif Yazma ve Anlık Yapay Zeka Hata Düzeltme"
+    )
     st.markdown(
         f"Bu modülde öğrendiğiniz kelime ve kalıplarla, hayalinize ('"
         f"{st.session_state['user_dream']}') atıfta bulunan en az 2 cümlelik"
-        " kendi cümlenizi yazın:"
+        " kendi cümlenizi yazın. Yazdığınız metin anında taranıp düzeltilecektir:"
     )
 
     user_writing = st.text_area(
@@ -556,7 +588,34 @@ elif st.session_state["stage"] == "learning":
         placeholder=(
             "Örn: In order to reach my dream, I practice every day..."
         ),
+        key="writing_input_field",
     )
+
+    if st.button("Yazımı Değerlendir ve Eksikleri Düzelt 🔍"):
+      if user_writing.strip():
+        write_eval_prompt = (
+            f"Evaluate the following user-written text in"
+            f" {st.session_state['target_lang']}: '{user_writing}'. Provide"
+            " constructive feedback in Turkish, point out grammatical, spelling,"
+            " or vocabulary errors, explain missing points, and provide fully"
+            " corrected/improved professional versions of the sentences."
+        )
+        try:
+          res = client.chat.completions.create(
+              model="llama-3.3-70b-versatile",
+              messages=[{"role": "user", "content": write_eval_prompt}],
+              temperature=0.3,
+          )
+          st.session_state["writing_feedback"] = res.choices[0].message.content
+        except Exception:
+          st.session_state["writing_feedback"] = "Yazı değerlendirilemedi."
+      else:
+        st.warning("Lütfen değerlendirilecek bir metin yazın.")
+
+    if st.session_state["writing_feedback"]:
+      st.success(st.session_state["writing_feedback"])
+
+    st.markdown("<br>", unsafe_allow_html=True)
 
     if st.button("Dersi Tamamla ve Bölüm Karnesini Gör 🏆", type="primary"):
       if user_writing.strip():
