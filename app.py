@@ -57,7 +57,7 @@ if st.session_state["stage"] == "welcome":
   st.markdown(
       "Adım adım ilerleyen 10 soruluk kapsamlı analiz sınavımızla; hem"
       " **dil seviyenizi** hem de **kişilik ve öğrenme stilinizi** belirliyoruz."
-      " Size özel profesyonel eğitim planınızı oluşturalım."
+      " Dilediğiniz takdirde seviyenizi sonradan değiştirebilirsiniz."
   )
 
   col1, col2 = st.columns(2)
@@ -194,7 +194,6 @@ elif st.session_state["stage"] == "placement":
   st.markdown(f"### {current_q['q']}")
   st.caption("Lütfen size en uygun seçeneği işaretleyin (Varsayılan seçim yok).")
 
-  # index=None ile varsayılan seçim engellenir
   ans_key = f"q_{step}"
   selected_ans = st.radio(
       "Seçenekler:",
@@ -220,10 +219,7 @@ elif st.session_state["stage"] == "placement":
           st.session_state["placement_step"] += 1
           st.rerun()
         else:
-          st.warning(
-              "Lütfen ilerlemek için bir seçenek işaretleyin (Varsayılan seçim"
-              " yoktur)."
-          )
+          st.warning("Lütfen ilerlemek için bir seçenek işaretleyin.")
     else:
       if st.button(
           "Analizi Tamamla ve Müfredatımı Oluştur 🎯", type="primary"
@@ -231,7 +227,6 @@ elif st.session_state["stage"] == "placement":
         if selected_ans is not None:
           st.session_state["placement_answers"][step] = selected_ans
 
-          # Tüm yanıtları birleştirip LLM ile Seviye ve Kişilik Analizi yapalım
           answers_summary = "\n".join(
               f"Soru {k}: {v}"
               for k, v in st.session_state["placement_answers"].items()
@@ -241,9 +236,8 @@ elif st.session_state["stage"] == "placement":
               "Analyze the following 10 placement and personality test answers"
               " for a language learner. Determine their exact CEFR level (A1,"
               " A2, B1, or B2) and summarize their psychological/learning"
-              " personality profile (e.g., narrative-driven, analytical,"
-              " visual, quick-session oriented). Provide the output in Turkish"
-              " in this exact format:\nSEVIYE: [Level]\nPROFIL: [Profile"
+              " personality profile. Provide the output in Turkish in this"
+              " exact format:\nSEVIYE: [Level]\nPROFIL: [Profile"
               " description]\n\nAnswers:\n" + answers_summary
           )
 
@@ -255,7 +249,6 @@ elif st.session_state["stage"] == "placement":
             )
             analysis_text = res.choices[0].message.content
 
-            # Basit parse
             detected_lvl = "A1"
             detected_profile = "Genel öğrenme profili"
             for line in analysis_text.split("\n"):
@@ -282,7 +275,7 @@ elif st.session_state["stage"] == "placement":
         else:
           st.warning("Lütfen son soruyu da yanıtlayın.")
 
-# --- AŞAMA 3: HİKAYE VE HEDEF BELİRLEME ---
+# --- AŞAMA 3: HİKAYE, HEDEF VE SEVİYE DÜZELTME (OVERRIDE) ---
 elif st.session_state["stage"] == "goal_setup":
   st.title(f"🌟 {st.session_state['user_name']}, Kişisel Hedefini Tanımla")
   st.success(
@@ -291,7 +284,27 @@ elif st.session_state["stage"] == "goal_setup":
       f"{st.session_state['personality_profile']}*"
   )
 
+  st.markdown(
+      "💡 *Not: Analiz sonucunda belirlenen seviyenin hatalı olduğunu"
+      " düşünüyorsanız, aşağıdaki alandan dilediğiniz seviyeyi manuel olarak"
+      " seçebilirsiniz.*"
+  )
+
   with st.form("story_goal_form"):
+    # Kullanıcının seviyeyi manuel değiştirebilmesi (Override)
+    level_options = ["A1", "A2", "B1", "B2"]
+    current_lvl_idx = (
+        level_options.index(st.session_state["current_level"])
+        if st.session_state["current_level"] in level_options
+        else 0
+    )
+
+    selected_level_override = st.selectbox(
+        "Eğitim Seviyenizi Onaylayın / Değiştirin:",
+        level_options,
+        index=current_lvl_idx,
+    )
+
     goal_choice = st.selectbox(
         "Temel Amacınız Nedir?",
         [
@@ -313,12 +326,13 @@ elif st.session_state["stage"] == "goal_setup":
         "Kişiselleştirilmiş Yoğun Müfredatımı Oluştur 🚀"
     )
     if goal_submitted:
+      # Kullanıcının manuel seçtiği seviyeyi kaydet
+      st.session_state["current_level"] = selected_level_override
       st.session_state["user_goal"] = goal_choice
       st.session_state["user_dream"] = (
           dream_input if dream_input.strip() else "Kendi başarı hikayesini yazmak"
       )
 
-      # Profil ve seviyeye uygun 4 detaylı modül
       lvl = st.session_state["current_level"]
       st.session_state["modules"] = [
           {
@@ -360,8 +374,8 @@ elif st.session_state["stage"] == "goal_setup":
 elif st.session_state["stage"] == "dashboard":
   st.title(f"🗺️ {st.session_state['user_name']} - Kişiselleştirilmiş Eğitim Paneli")
   st.success(
-      f"🎯 **Hedef:** {st.session_state['user_goal']} | 🌟 **Profil:**"
-      f" {st.session_state['personality_profile']}"
+      f"🎯 **Seviye:** {st.session_state['current_level']} | 🎯 **Hedef:**"
+      f" {st.session_state['user_goal']}"
   )
 
   st.markdown("### 📚 5-10 Dakikalık Yoğun Eğitim Modülleriniz")
