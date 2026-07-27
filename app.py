@@ -1180,33 +1180,39 @@ else:
               "Mağaza öğle molası nedeniyle kapalıdır, saat 14:00'te açılacaktır.",
               "Mağaza saat 14:00'te kapanacaktır.",
           ],
+          index=None,
       )
 
       p1_q2 = st.radio(
           "2. Doğru dil bilgisi formunu seçin: 'My friends ___ in London"
           " last year.'",
           ["are", "were", "was"],
+          index=None,
       )
 
       p1_q3 = st.radio(
           "3. Kelime Anlamı: 'Expensive' kelimesinin zıt anlamlısı ( antonym )"
           " hangisidir?",
           ["Cheap", "Big", "Old"],
+          index=None,
       )
 
       p1_q4 = st.radio(
           "4. Edat Sorusu: 'The meeting is ___ Monday morning.'",
           ["in", "at", "on"],
+          index=None,
       )
 
       p1_q5 = st.radio(
           "5. Soru Kelimesi: '___ do you go to the gym?' - 'Twice a week.'",
           ["How often", "How much", "Where"],
+          index=None,
       )
 
       p1_q6 = st.radio(
           "6. Geniş Zaman (Present Simple): 'She ___ coffee in the morning.'",
           ["drink", "drinks", "drinking"],
+          index=None,
       )
 
       st.markdown("---")
@@ -1245,6 +1251,7 @@ else:
               "25 pound ödeyecektir ve kredi kartı ile ödeme yapacaktır.",
               "Ücretsiz alacaktır.",
           ],
+          index=None,
       )
 
       st.markdown("---")
@@ -1551,32 +1558,42 @@ else:
         step1_ans = st.radio(
             "Sabah saatlerinde karşılaştığınız birine hangi kalıbı söylersiniz?",
             ["Good evening", "Good morning", "Good night"],
+            index=None,
             key=f"s1_m{mod_id}",
         )
         if st.button("Adım 1'i Kontrol Et", key=f"b1_m{mod_id}"):
           if step1_ans == "Good morning":
             st.success("Tebrikler, 1. Adımı Başarıyla Geçtiniz! 🎉")
+          elif step1_ans is None:
+            st.warning("Lütfen bir seçenek belirleyin.")
           else:
             st.error("Yanlış. Sabahları 'Good morning' tercih edilir.")
       elif mod_id == 2:
         step1_ans = st.radio(
             "Boşluğa uygun 'To Be' formunu seçin: 'He ___ a teacher.'",
             ["am", "is", "are"],
+            index=None,
             key=f"s1_m{mod_id}",
         )
         if st.button("Adım 1'i Kontrol Et", key=f"b1_m{mod_id}"):
           if step1_ans == "is":
             st.success("Tebrikler, 1. Adımı Başarıyla Geçtiniz! 🎉")
+          elif step1_ans is None:
+            st.warning("Lütfen bir seçenek belirleyin.")
           else:
             st.error("Yanlış. He öznesi ile 'is' kullanılır.")
       else:
         step1_ans = st.radio(
             f"Modül {mod_id} ana kuralını doğru uyguladığınızdan emin misiniz?",
             ["Evet, kuralları kavradım", "Henüz tam emin değilim"],
+            index=None,
             key=f"s1_m{mod_id}",
         )
         if st.button("Adım 1'i Kontrol Et", key=f"b1_m{mod_id}"):
-          st.success("Harika! 1. Adım tamamlandı.")
+          if step1_ans is not None:
+            st.success("Harika! 1. Adım tamamlandı.")
+          else:
+            st.warning("Lütfen bir seçenek belirleyin.")
       st.markdown("</div>", unsafe_allow_html=True)
 
       # Adım 2: Cümle Tamamlama / Boşluk Doldurma
@@ -1616,6 +1633,7 @@ else:
       step3_ans = st.radio(
           "Bu ifadeye katılıyor musunuz?",
           ["Kesinlikle Katılıyorum", "Katılmıyorum"],
+          index=None,
           key=f"s3_m{mod_id}",
       )
       if st.button("Atölyeyi Tamamla", key=f"b3_m{mod_id}"):
@@ -1625,6 +1643,8 @@ else:
               " tamamladınız 🚀"
           )
           st.balloons()
+        elif step3_ans is None:
+          st.warning("Lütfen bir seçenek belirleyin.")
         else:
           st.info(
               "Pratik yaptıkça pratiklerin ne kadar faydalı olduğunu"
@@ -1666,6 +1686,7 @@ else:
           user_choice = st.radio(
               "Seçiminizi yapın:",
               q["options"],
+              index=None,
               key=f"q_exam_{mod_id}_{q_idx}",
           )
           user_answers[q_idx] = (user_choice, q["answer"])
@@ -1676,6 +1697,8 @@ else:
             if chosen == correct:
               correct_count += 1
               st.success(f"Soru {q_idx + 1}: Doğru! 🎉")
+            elif chosen is None:
+              st.warning(f"Soru {q_idx + 1}: Boş bırakıldı.")
             else:
               st.error(
                   f"Soru {q_idx + 1}: Yanlış. Doğru cevap: **{correct}**"
@@ -1727,13 +1750,16 @@ else:
                 "İleri düzey iş hukuku ve sözleşmeler",
                 "Teknik mühendislik terimleri",
             ],
+            index=None,
             key=f"lst_q_{mod_id}",
         )
         if st.button("Dinleme Cevabını Kontrol Et", key=f"btn_lst_{mod_id}"):
-          if "Günlük" in listening_q:
+          if listening_q == "Günlük rutinler ve temel tanışma kalıpları":
             st.success(
                 "Tebrikler! Dinleme ana temasını doğru kavradınız. 🎉"
             )
+          elif listening_q is None:
+            st.warning("Lütfen bir seçenek belirleyin.")
           else:
             st.error(
                 "Yanlış seçenek. Metnin temel odak noktasını tekrar gözden"
