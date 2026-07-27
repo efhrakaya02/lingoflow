@@ -1,5 +1,6 @@
 import json
 import os
+from datetime import datetime
 import streamlit as st
 
 # Sayfa Konfigürasyonu
@@ -9,7 +10,7 @@ st.set_page_config(
     layout="wide",
 )
 
-# Özel CSS İyileştirmeleri
+# Özel CSS İyileştirmeleri (Sertifika ve Kart Stilleri Dahil)
 st.markdown(
     """
     <style>
@@ -48,6 +49,59 @@ st.markdown(
         margin-bottom: 15px;
         box-shadow: 0 1px 3px rgba(0,0,0,0.02);
     }
+    .exam-section-card {
+        background-color: #fafbfc;
+        padding: 20px;
+        border-radius: 10px;
+        border: 1px solid #d1d5db;
+        margin-bottom: 25px;
+    }
+    .certificate-container {
+        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+        border: 10px solid #1e3a8a;
+        padding: 40px;
+        border-radius: 15px;
+        text-align: center;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        margin-top: 20px;
+        font-family: 'Georgia', serif;
+    }
+    .cert-title {
+        color: #1e3a8a;
+        font-size: 32px;
+        font-weight: bold;
+        margin-bottom: 10px;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+    }
+    .cert-subtitle {
+        color: #4b5563;
+        font-size: 16px;
+        margin-bottom: 25px;
+    }
+    .cert-name {
+        color: #111827;
+        font-size: 28px;
+        font-weight: bold;
+        border-bottom: 2px solid #9ca3af;
+        display: inline-block;
+        padding: 0 30px 5px 30px;
+        margin: 15px 0;
+    }
+    .cert-body {
+        color: #374151;
+        font-size: 16px;
+        line-height: 1.6;
+        margin: 20px 0;
+    }
+    .cert-footer {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 40px;
+        padding: 0 20px;
+        font-size: 14px;
+        color: #4b5563;
+    }
     </style>
 """,
     unsafe_allow_html=True,
@@ -67,7 +121,7 @@ def load_curriculum():
 
 data = load_curriculum()
 
-# --- HER MODÜL İÇİN GÜNLÜK HAYATIN EN ÇOK KULLANILAN EN AZ 20 KELİMESİ ---
+# --- TÜM MODÜLLER İÇİN KELİME HAZİNESİ (1-12) ---
 EXTENDED_VOCABULARY = {
     1: [
         {
@@ -1079,399 +1133,668 @@ if data is None:
 else:
   modules = data.get("modules", [])
 
-  # Kenar Çubuğu: Modül Seçimi ve İlerleme
+  # Kenar Çubuğu: Modül Navigasyonu ve Resmi Deneme Sınavı Seçeneği
   st.sidebar.header("📖 Modül Navigasyonu")
   module_titles = [f"Modül {m['module_id']}: {m['title']}" for m in modules]
-  selected_module_idx = st.sidebar.selectbox(
-      "Çalışmak istediğiniz modülü seçin:", range(len(module_titles)), format_func=lambda x: module_titles[x]
+
+  nav_options = module_titles + [
+      "🏆 Resmi A1 Dil Yeterlik Sınavı (Mock Exam & Sertifika)"
+  ]
+  selected_nav_idx = st.sidebar.selectbox(
+      "Bölüm veya Sınav Seçin:",
+      range(len(nav_options)),
+      format_func=lambda x: nav_options[x],
   )
 
-  current_module = modules[selected_module_idx]
-  mod_id = current_module["module_id"]
-
-  vocab_list = EXTENDED_VOCABULARY.get(mod_id, current_module.get("vocabulary", []))
-
-  # --- ANA İÇERİK SEKMELERİ ---
-  tab_obj, tab_vocab, tab_grammar, tab_exam = st.tabs([
-      "🎯 Hedef & Amaç",
-      f"🗣️ Kelime Hazinesi ({len(vocab_list)} Kelime) & Cümle Atölyesi",
-      "💡 Dil Bilgisi (Genişletilmiş Atölye)",
-      "📝 4 Temel Beceri Sınavı & Simülasyonu",
-  ])
-
-  # 1. SEKME: HEDEF & AMAÇ
-  with tab_obj:
-    st.header(f"Modül {mod_id}: {current_module['title']}")
-    st.info(f"🎯 **Modülün Ana Hedefi:** {current_module['objective']}")
-
-    col1, col2 = st.columns(2)
-    with col1:
-      st.markdown("### 📌 Bu Modülde Neler Öğreneceksiniz?")
-      st.markdown(
-          f"- Günlük hayatta en çok kullanılan en az **{len(vocab_list)} temel"
-          " kelime ve kalıp**\n- Modüle özel dil bilgisi kuralı ve cümle"
-          " yapısı\n- Çok adımlı interaktif dil bilgisi atölyesi pratikleri"
-      )
-    with col2:
-      st.markdown("### 🚀 Önerilen Çalışma Akışı")
-      st.markdown(
-          "1. **Kelime Hazinesi & Cümle Atölyesi** sekmesinden kelimeleri"
-          " inceleyin.\n2. **Dil Bilgisi Atölyesi** sekmesinden çok aşamalı"
-          " testleri ve alıştırmaları tamamlayın.\n3. **Sınav Simülasyonu** ile"
-          " 4 beceride kendinizi test edin."
-      )
-
-  # 2. SEKME: KELİME HAZİNESİ & CÜMLE ATÖLYESİ
-  with tab_vocab:
-    st.header(f"🗣️ Modül {mod_id} - Günlük Hayat Kelime Hazinesi (20+ Kelime)")
-    st.markdown(
-        "Aşağıda bu modülde en sık kullanılan kelimeler listelenmiştir. Her"
-        " kelimenin altında bulunan **Cümle Kurma Atölyesi** ile bu kelimeleri"
-        " dersin dil bilgisi kalıbına göre tek tek cümle içinde kullanabilirsiniz."
-    )
-
-    grammar_title = current_module.get("grammar_pill", {}).get(
-        "title", "Modül Kalıbı"
+  # Eğer kullanıcı Resmi Deneme Sınavını seçtiyse
+  if selected_nav_idx == len(modules):
+    st.header(
+        "🏆 Resmi A1 Dil Yeterlik Sınavı (Cambridge/CEFR KET Standartlarında"
+        " Mock Exam)"
     )
     st.info(
-        f"💡 **Cümle Kuralı İpucu:** Bu modüldeki pratiklerinizde **[{grammar_title}]**"
-        " yapısını kullanmaya özen gösterin!"
+        "📋 **Resmi Sınav Yönergesi:** Bu deneme sınavı uluslararası A1 dil"
+        " yeterlik sınavlarının (KET formatı) yapı ve zorluk derecesine göre"
+        " tasarlanmıştır. Sınav **Okuma & Dil Bilgisi**, **Dinleme** ve"
+        " **Yazma** olmak üzere 3 resmi bileşenden oluşur. Toplam başarı puanı"
+        " **en az %70** olan katılımcılar resmi Dijital Başarı Sertifikası"
+        " almaya hak kazanır."
     )
-
-    with st.expander("📚 Tüm Kelime Listesini Görüntüle (20 Kelime)", expanded=False):
-      cols_v = st.columns(2)
-      for idx, item in enumerate(vocab_list):
-        with cols_v[idx % 2]:
-          st.markdown(
-              f"""
-                    <div class="vocab-card">
-                        <span style="font-size: 12px; color: #888;">Kelime #{idx + 1}</span>
-                        <h4 style="margin: 0; color: #0066cc;">{item['term']}</h4>
-                        <p style="margin: 6px 0; font-size: 15px; font-weight: bold; color: #222;">{item['translation']}</p>
-                        <p style="margin: 0; font-style: italic; color: #555; font-size: 13px;">💬 Örnek: "{item['example']}"</p>
-                    </div>
-                    """,
-              unsafe_allow_html=True,
-          )
 
     st.markdown("---")
-    st.subheader(
-        "🛠️ Kelime Kelime Cümle Kurma Atölyesi (İnteraktif Pratik Modu)"
-    )
-    selected_word_idx = st.selectbox(
-        "Pratik yapmak istediğiniz kelimeyi seçin:",
-        range(len(vocab_list)),
-        format_func=lambda x: (
-            f"{x + 1}. {vocab_list[x]['term']} ({vocab_list[x]['translation']})"
-        ),
-        key=f"vocab_select_{mod_id}",
-    )
 
-    target_word_item = vocab_list[selected_word_idx]
+    with st.form("official_mock_exam_form"):
+      # --- BÖLÜM 1: READING & USE OF ENGLISH ---
+      st.markdown(
+          '<div class="exam-section-card"><h3>📖 Bölüm 1: Okuma ve Dil'
+          ' Bilgisi Kullanımı (Reading & Use of English)</h3><p>Aşağıdaki 6'
+          ' resmi formatlı soruyu yanıtlayın:</p></div>',
+          unsafe_allow_html=True,
+      )
 
-    st.markdown(
-        f"""
-        <div style="background-color: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #0066cc; margin-bottom: 15px;">
-            <h4 style="margin:0; color:#0066cc;">Seçilen Kelime: {target_word_item['term']} ({target_word_item['translation']})</h4>
-            <p style="margin: 5px 0 0 0; font-style: italic; color: #555;">Referans Cümle: "{target_word_item['example']}"</p>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+      p1_q1 = st.radio(
+          "1. (Notices & Signs) Bir mağaza girişinde şu yazar: 'CLOSED FOR"
+          " LUNCH. Back at 2 PM.' Bu tabela ne anlama gelir?",
+          [
+              "Mağaza tüm gün kapalıdır.",
+              "Mağaza öğle molası nedeniyle kapalıdır, saat 14:00'te açılacaktır.",
+              "Mağaza saat 14:00'te kapanacaktır.",
+          ],
+      )
 
-    user_sentence = st.text_input(
-        f"'{target_word_item['term']}' kelimesini kullanarak modül kuralına"
-        " uygun bir İngilizce cümle yazın:",
-        key=f"sentence_input_{mod_id}_{selected_word_idx}",
-    )
+      p1_q2 = st.radio(
+          "2. Doğru dil bilgisi formunu seçin: 'My friends ___ in London"
+          " last year.'",
+          ["are", "were", "was"],
+      )
 
-    if st.button(
-        "Cümleyi Kontrol Et ve Onayla", key=f"btn_check_w_{mod_id}_{selected_word_idx}"
-    ):
-      if user_sentence.strip():
-        word_included = (
-            target_word_item["term"].lower() in user_sentence.lower()
+      p1_q3 = st.radio(
+          "3. Kelime Anlamı: 'Expensive' kelimesinin zıt anlamlısı ( antonym )"
+          " hangisidir?",
+          ["Cheap", "Big", "Old"],
+      )
+
+      p1_q4 = st.radio(
+          "4. Edat Sorusu: 'The meeting is ___ Monday morning.'",
+          ["in", "at", "on"],
+      )
+
+      p1_q5 = st.radio(
+          "5. Soru Kelimesi: '___ do you go to the gym?' - 'Twice a week.'",
+          ["How often", "How much", "Where"],
+      )
+
+      p1_q6 = st.radio(
+          "6. Geniş Zaman (Present Simple): 'She ___ coffee in the morning.'",
+          ["drink", "drinks", "drinking"],
+      )
+
+      st.markdown("---")
+
+      # --- BÖLÜM 2: LISTENING COMPREHENSION ---
+      st.markdown(
+          '<div class="exam-section-card"><h3>🎧 Bölüm 2: Dinleme ve Anlama'
+          ' (Listening Comprehension Simulation)</h3><p>Aşağıdaki diyalog'
+          ' transkriptini okuyarak/dinleyerek soruyu yanıtlayın:</p></div>',
+          unsafe_allow_html=True,
+      )
+
+      st.code(
+          "Transcript:\n- Clerk: Hello, can I help you?\n- Customer: Yes,"
+          " please. How much is this blue shirt?\n- Clerk: It is 25"
+          " pounds.\n- Customer: Great, I will take it. Can I pay by credit"
+          " card?\n- Clerk: Sure, enter your PIN here, please.",
+          language="text",
+      )
+
+      p2_q1 = st.radio(
+          "7. Müşteri satın almak istediği mavi gömlek için ne kadar ödeyecektir"
+          " ve nasıl ödeme yapacaktır?",
+          [
+              "25 pound ödeyecektir ve nakit ödeme yapacaktır.",
+              "25 pound ödeyecektir ve kredi kartı ile ödeme yapacaktır.",
+              "Ücretsiz alacaktır.",
+          ],
+      )
+
+      st.markdown("---")
+
+      # --- BÖLÜM 3: WRITING TASK ---
+      st.markdown(
+          '<div class="exam-section-card"><h3>✍️ Bölüm 3: Yazılı Anlatım'
+          ' (Writing Task - CEFR A1 Standard)</h3><p>Resmi sınavın yazma'
+          ' bölümü için kısa bir paragraf oluşturun:</p></div>',
+          unsafe_allow_html=True,
+      )
+
+      st.markdown(
+          "**Yönerge:** Kendinizi, ailenizi, mesleğinizi ve günlük"
+          " rutinlerinizi içeren en az 3-4 cümlelik kısa bir tanıtım yazısı"
+          " yazın."
+      )
+      user_writing_exam = st.text_area(
+          "İngilizce yanıtınızı buraya girin:",
+          height=120,
+          placeholder=(
+              "Hello, my name is... I live in... I work as a... In my free"
+              " time, I..."
+          ),
+      )
+
+      submit_official_exam = st.form_submit_button(
+          "Resmi Sınavı Tamamla ve Değerlendir"
+      )
+
+    if submit_official_exam:
+      # Puanlama Mantığı (Çoktan seçmeli 7 soru + Yazma kontrolü)
+      score = 0
+      if p1_q1 == (
+          "Mağaza öğle molası nedeniyle kapalıdır, saat 14:00'te açılacaktır."
+      ):
+        score += 1
+      if p1_q2 == "were":
+        score += 1
+      if p1_q3 == "Cheap":
+        score += 1
+      if p1_q4 == "on":
+        score += 1
+      if p1_q5 == "How often":
+        score += 1
+      if p1_q6 == "drinks":
+        score += 1
+      if p2_q1 == (
+          "25 pound ödeyecektir ve kredi kartı ile ödeme yapacaktır."
+      ):
+        score += 1
+
+      # Yazma puanı (en az 15 kelime ise tam puan ekle)
+      writing_valid = False
+      if user_writing_exam and len(user_writing_exam.strip().split()) >= 15:
+        score += 3  # Yazma bölümü 3 puan değerinde
+        writing_valid = True
+
+      total_possible = 10  # 7 çoktan seçmeli + 3 yazma bölümü
+      percentage = (score / total_possible) * 100
+
+      st.markdown("---")
+      st.subheader(
+          f"📊 Resmi Sınav Sonucunuz: {score} / {total_possible}"
+          f" (%{percentage:.0f})"
+      )
+
+      # Detaylı Bölüm Karnesi
+      col_c1, col_c2, col_c3 = st.columns(3)
+      with col_c1:
+        st.metric(
+            "Okuma & Dil Bilgisi (6 Sorudan)",
+            f"{sum([p1_q1=='Mağaza öğle molası nedeniyle kapalıdır, saat 14:00\'te açılacaktır.', p1_q2=='were', p1_q3=='Cheap', p1_q4=='on', p1_q5=='How often', p1_q6=='drinks'])}/6",
         )
-        word_count = len(user_sentence.split())
+      with col_c2:
+        st.metric(
+            "Dinleme Analizi",
+            (
+                "1/1 Doğru"
+                if p2_q1
+                == "25 pound ödeyecektir ve kredi kartı ile ödeme yapacaktır."
+                else "0/1"
+            ),
+        )
+      with col_c3:
+        st.metric(
+            "Yazılı Anlatım Rubriği",
+            "3/3 Başarılı" if writing_valid else "1/3 (Metin kısa)",
+        )
 
-        if word_included and word_count >= 3:
-          st.success(
-              f"🎉 Harika! '{target_word_item['term']}' kelimesini doğru bir"
-              " şekilde cümlede kullandınız. Cümle yapınız onaylandı!"
-          )
-          st.balloons()
-        elif not word_included:
-          st.warning(
-              f"⚠️ UYARI: Yazdığınız cümlede '{target_word_item['term']}'"
-              " kelimesi geçmiyor gibi görünüyor. Kelimeyi ekleyerek tekrar"
-              " deneyin."
-          )
-        else:
-          st.info(
-              "👍 Cümleniz alındı ancak A1 seviyesi için biraz kısa oldu. Daha"
-              " uzun ve açıklayıcı bir cümle kurmayı deneyebilirsiniz."
-          )
-      else:
-        st.warning("Lütfen boş bırakmayın, örnek bir cümle yazın.")
-
-  # 3. SEKME: GRAMMAR PILL (GENİŞLETİLMİŞ ÇOK ADIMLI İNTERAKTİF ATÖLYE)
-  with tab_grammar:
-    grammar = current_module.get("grammar_pill", {})
-    st.header(f"💡 {grammar.get('title', 'Dil Bilgisi Kuralı')}")
-
-    st.markdown(
-        f"""
-    <div style="background-color: #f8f9fa; padding: 20px; border-radius: 10px; border-left: 5px solid #0066cc; margin-bottom: 20px;">
-        <h4 style="margin-top:0; color:#333;">Kural Açıklaması</h4>
-        <p style="font-size: 16px; color: #444;">{grammar.get('explanation', '')}</p>
-    </div>
-    """,
-        unsafe_allow_html=True,
-    )
-
-    st.subheader("📌 Temel Kurallar ve İstisnalar:")
-    for rule in grammar.get("rules", []):
-      st.markdown(f"* **{rule}**")
-
-    # --- ÇOK ADIMLI İNTERAKTİF DİL BİLGİSİ ATÖLYESİ ---
-    st.markdown("---")
-    st.markdown(
-        '<div class="grammar-workshop"><h3>🛠️ Genişletilmiş İnteraktif Dil'
-        ' Bilgisi Atölyesi</h3><p>Bu modülü tam anlamıyla kavramak için aşağıdaki'
-        ' 3 farklı etkileşimli adımı tamamlayın:</p></div>',
-        unsafe_allow_html=True,
-    )
-
-    # Adım 1: Kural Kavrama Testi
-    st.markdown(
-        '<div class="challenge-box"><h4>📌 Adım 1: Temel Kural Testi</h4>',
-        unsafe_allow_html=True,
-    )
-    if mod_id == 1:
-      step1_ans = st.radio(
-          "Sabah saatlerinde karşılaştığınız birine hangi kalıbı söylersiniz?",
-          ["Good evening", "Good morning", "Good night"],
-          key=f"s1_m{mod_id}",
-      )
-      if st.button("Adım 1'i Kontrol Et", key=f"b1_m{mod_id}"):
-        if step1_ans == "Good morning":
-          st.success("Tebrikler, 1. Adımı Başarıyla Geçtiniz! 🎉")
-        else:
-          st.error("Yanlış. Sabahları 'Good morning' tercih edilir.")
-    elif mod_id == 2:
-      step1_ans = st.radio(
-          "Boşluğa uygun 'To Be' formunu seçin: 'He ___ a teacher.'",
-          ["am", "is", "are"],
-          key=f"s1_m{mod_id}",
-      )
-      if st.button("Adım 1'i Kontrol Et", key=f"b1_m{mod_id}"):
-        if step1_ans == "is":
-          st.success("Tebrikler, 1. Adımı Başarıyla Geçtiniz! 🎉")
-        else:
-          st.error("Yanlış. He öznesi ile 'is' kullanılır.")
-    else:
-      step1_ans = st.radio(
-          f"Modül {mod_id} ana kuralını doğru uyguladığınızdan emin misiniz?",
-          ["Evet, kuralları kavradım", "Henüz tam emin değilim"],
-          key=f"s1_m{mod_id}",
-      )
-      if st.button("Adım 1'i Kontrol Et", key=f"b1_m{mod_id}"):
-        st.success("Harika! 1. Adım tamamlandı.")
-    st.markdown("</div>", unsafe_allow_html=True)
-
-    # Adım 2: Cümle Tamamlama / Boşluk Doldurma
-    st.markdown(
-        '<div class="challenge-box"><h4>✍️ Adım 2: Boşluk Doldurma ve Cümle'
-        ' Üretme</h4>',
-        unsafe_allow_html=True,
-    )
-    st.markdown(
-        "Aşağıdaki alana bu modülün gramer yapısına uygun örnek bir cümle"
-        " yazarak sistemden teyit alın:"
-    )
-    step2_input = st.text_input(
-        "Modül gramerine uygun İngilizce cümleniz:", key=f"s2_input_{mod_id}"
-    )
-    if st.button("Adım 2'yi Kontrol Et", key=f"b2_m{mod_id}"):
-      if len(step2_input.strip()) >= 5:
+      if percentage >= 70:
         st.success(
-            "Harika! Cümle yapısı ve uzunluğu kurala uygun görünüyor. 🌟"
-        )
-      else:
-        st.warning(
-            "Lütfen biraz daha uzun ve açıklayıcı bir cümle yazmaya çalışın."
-        )
-    st.markdown("</div>", unsafe_allow_html=True)
-
-    # Adım 3: Hata Ayıklama / Doğrulama Görevi
-    st.markdown(
-        '<div class="challenge-box"><h4>🔍 Adım 3: Hata Ayıklama (Doğru mu'
-        ' Yanlış mı?)</h4>',
-        unsafe_allow_html=True,
-    )
-    st.markdown(
-        "Soru: 'A1 seviyesinde temel kalıpları günlük hayatta ezberlemeden,"
-        " mantığını kavrayarak kullanmak kalıcılığı artırır.'"
-    )
-    step3_ans = st.radio(
-        "Bu ifadeye katılıyor musunuz?",
-        ["Kesinlikle Katılıyorum", "Katılmıyorum"],
-        key=f"s3_m{mod_id}",
-    )
-    if st.button("Atölyeyi Tamamla", key=f"b3_m{mod_id}"):
-      if step3_ans == "Kesinlikle Katılıyorum":
-        st.success(
-            "Mükemmel bakış açısı! Dil bilgisi atölyesini başarıyla"
-            " tamamladınız 🚀"
+            "🎉 Tebrikler! Resmi KET/CEFR A1 yeterlik barajını başarıyla"
+            " geçtiniz."
         )
         st.balloons()
-      else:
-        st.info(
-            "Pratik yaptıkça pratiklerin ne kadar faydalı olduğunu"
-            " göreceksiniz."
-        )
-    st.markdown("</div>", unsafe_allow_html=True)
 
-  # 4. SEKME: SINAV SİMÜLASYONU (4 TEMEL BECERİ - GENİŞLETİLMİŞ PRATİK)
-  with tab_exam:
-    st.header("📝 4 Temel Dil Becerisi Sınav Simülasyonu & Yoğun Pratik")
-    st.markdown(
-        "KET ve telc sınav formatına birebir uygun, çok aşamalı ve anında"
-        " geri bildirimli sınav simülasyon alanındasınız."
+        st.markdown("### 🎓 Resmi Sertifika Bilgileri")
+        participant_name = st.text_input(
+            "Sertifikanızda yer alacak Adınız Soyadınız:",
+            value="Değerli Kursiyer",
+        )
+
+        if participant_name.strip():
+          today_date = datetime.now().strftime("%d.%m.%Y")
+          cert_html = f"""
+                <div class="certificate-container">
+                    <div class="cert-title">Official A1 Certificate of Proficiency</div>
+                    <div class="cert-subtitle">Lingoflow International Language Assessment Board</div>
+                    <div class="cert-body">Bu belge, yukarıda adı geçen adayın uluslararası CEFR A1 standartlarına uygun olarak hazırlanan Reading, Listening ve Writing bileşenlerini içeren resmi yeterlik deneme sınavını <strong>%{percentage:.0f}</strong> puanla başarıyla tamamladığını ve A1 dil yetkinlik düzeyine ulaştığını tescil eder.</div>
+                    <div class="cert-name">{participant_name}</div>
+                    <div class="cert-footer">
+                        <div>Sınav Tarihi: {today_date}</div>
+                        <div><b>Lingoflow Board of Examiners</b></div>
+                    </div>
+                </div>
+                """
+          st.markdown(cert_html, unsafe_allow_html=True)
+          st.info(
+              "💡 Not: Bu sertifikayı tarayıcınızın yazdırma özelliği"
+              " (Ctrl+P / Cmd+P) ile PDF olarak kaydedebilir veya çıktı"
+              " alabilirsiniz."
+          )
+      else:
+        st.warning(
+            f"⚠️ Sınav skorunuz %{percentage:.0f}. Sertifika alabilmek için"
+            " resmi baraj olan en az %70 (7/10) puanı sağlamanız"
+            " gerekmektedir. Eksik olduğunuz modülleri tekrar gözden"
+            " geçirebilirsiniz."
+        )
+
+  else:
+    # Normal Modül Görünümü
+    current_module = modules[selected_nav_idx]
+    mod_id = current_module["module_id"]
+    vocab_list = EXTENDED_VOCABULARY.get(
+        mod_id, current_module.get("vocabulary", [])
     )
 
-    exam = current_module.get("exam_simulation", {})
-    skill_tab1, skill_tab2, skill_tab3, skill_tab4 = st.tabs([
-        "📖 Okuma (Reading) Pratiği",
-        "🎧 Dinleme & Anlama (Listening)",
-        "🗣️ Konuşma (Speaking) Simülasyonu",
-        "✍️ Yazma & Rubrik (Writing)",
+    # --- ANA İÇERİK SEKMELERİ ---
+    tab_obj, tab_vocab, tab_grammar, tab_exam = st.tabs([
+        "🎯 Hedef & Amaç",
+        f"🗣️ Kelime Hazinesi ({len(vocab_list)} Kelime) & Cümle Atölyesi",
+        "💡 Dil Bilgisi (Genişletilmiş Atölye)",
+        "📝 4 Temel Beceri Sınavı & Simülasyonu",
     ])
 
-    with skill_tab1:
-      st.markdown(
-          '<div class="skill-header">📖 Okuma Becerisi ve Kapsamlı Anlama Testi</div>',
-          unsafe_allow_html=True,
-      )
-      if "reading" in exam:
-        st.info("Metni dikkatlice okuyunuz ve soruları yanıtlayınız:")
-        st.code(exam["reading"], language="text")
+    # 1. SEKME: HEDEF & AMAÇ
+    with tab_obj:
+      st.header(f"Modül {mod_id}: {current_module['title']}")
+      st.info(f"🎯 **Modülün Ana Hedefi:** {current_module['objective']}")
 
-      st.markdown("### 📌 Bölüm 1: Çoktan Seçmeli Sorular")
-      questions = exam.get("questions", [])
-      user_answers = {}
-      for q_idx, q in enumerate(questions):
-        st.markdown(f"**Soru {q_idx + 1}:** {q['q']}")
-        user_choice = st.radio(
-            "Seçiminizi yapın:",
-            q["options"],
-            key=f"q_exam_{mod_id}_{q_idx}",
+      col1, col2 = st.columns(2)
+      with col1:
+        st.markdown("### 📌 Bu Modülde Neler Öğreneceksiniz?")
+        st.markdown(
+            f"- Günlük hayatta en çok kullanılan en az **{len(vocab_list)} temel"
+            " kelime ve kalıp**\n- Modüle özel dil bilgisi kuralı ve cümle"
+            " yapısı\n- Çok adımlı interaktif dil bilgisi atölyesi pratikleri"
         )
-        user_answers[q_idx] = (user_choice, q["answer"])
+      with col2:
+        st.markdown("### 🚀 Önerilen Çalışma Akışı")
+        st.markdown(
+            "1. **Kelime Hazinesi & Cümle Atölyesi** sekmesinden kelimeleri"
+            " inceleyin.\n2. **Dil Bilgisi Atölyesi** sekmesinden çok aşamalı"
+            " testleri ve alıştırmaları tamamlayın.\n3. **Sınav Simülasyonu** ile"
+            " 4 beceride kendinizi test edin."
+        )
 
-      if st.button("Okuma Sınavını Değerlendir", key=f"check_ex_r_{mod_id}"):
-        correct_count = 0
-        for q_idx, (chosen, correct) in user_answers.items():
-          if chosen == correct:
-            correct_count += 1
-            st.success(f"Soru {q_idx + 1}: Doğru! 🎉")
-          else:
-            st.error(
-                f"Soru {q_idx + 1}: Yanlış. Doğru cevap: **{correct}**"
+    # 2. SEKME: KELİME HAZİNESİ & CÜMLE ATÖLYESİ
+    with tab_vocab:
+      st.header(
+          f"🗣️ Modül {mod_id} - Günlük Hayat Kelime Hazinesi (20+ Kelime)"
+      )
+      st.markdown(
+          "Aşağıda bu modülde en sık kullanılan kelimeler listelenmiştir. Her"
+          " kelimenin altında bulunan **Cümle Kurma Atölyesi** ile bu kelimeleri"
+          " dersin dil bilgisi kalıbına göre tek tek cümle içinde"
+          " kullanabilirsiniz."
+      )
+
+      grammar_title = current_module.get("grammar_pill", {}).get(
+          "title", "Modül Kalıbı"
+      )
+      st.info(
+          f"💡 **Cümle Kuralı İpucu:** Bu modüldeki pratiklerinizde"
+          f" **[{grammar_title}]** yapısını kullanmaya özen gösterin!"
+      )
+
+      with st.expander(
+          "📚 Tüm Kelime Listesini Görüntüle (20 Kelime)", expanded=False
+      ):
+        cols_v = st.columns(2)
+        for idx, item in enumerate(vocab_list):
+          with cols_v[idx % 2]:
+            st.markdown(
+                f"""
+                      <div class="vocab-card">
+                          <span style="font-size: 12px; color: #888;">Kelime #{idx + 1}</span>
+                          <h4 style="margin: 0; color: #0066cc;">{item['term']}</h4>
+                          <p style="margin: 6px 0; font-size: 15px; font-weight: bold; color: #222;">{item['translation']}</p>
+                          <p style="margin: 0; font-style: italic; color: #555; font-size: 13px;">💬 Örnek: "{item['example']}"</p>
+                      </div>
+                      """,
+                unsafe_allow_html=True,
             )
-        st.info(
-            f"📊 Okuma Simülasyonu Sonucu: {len(questions)} soruda {correct_count} doğru."
-        )
 
-    with skill_tab2:
+      st.markdown("---")
+      st.subheader(
+          "🛠️ Kelime Kelime Cümle Kurma Atölyesi (İnteraktif Pratik Modu)"
+      )
+      selected_word_idx = st.selectbox(
+          "Pratik yapmak istediğiniz kelimeyi seçin:",
+          range(len(vocab_list)),
+          format_func=lambda x: (
+              f"{x + 1}. {vocab_list[x]['term']}"
+              f" ({vocab_list[x]['translation']})"
+          ),
+          key=f"vocab_select_{mod_id}",
+      )
+
+      target_word_item = vocab_list[selected_word_idx]
+
       st.markdown(
-          '<div class="skill-header">🎧 Dinleme & Anlama (Listening Comprehension)</div>',
+          f"""
+          <div style="background-color: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #0066cc; margin-bottom: 15px;">
+              <h4 style="margin:0; color:#0066cc;">Seçilen Kelime: {target_word_item['term']} ({target_word_item['translation']})</h4>
+              <p style="margin: 5px 0 0 0; font-style: italic; color: #555;">Referans Cümle: "{target_word_item['example']}"</p>
+          </div>
+          """,
           unsafe_allow_html=True,
       )
-      listening_text = exam.get(
-          "reading", "Audio script unavailable for this module."
-      )
-      st.text_area(
-          "Dinleme Metni / Transkript:", value=listening_text, height=100, disabled=True
-      )
-      
-      tts_html = f"""
-      <div style="margin-bottom: 15px;">
-          <button onclick="speakText()" style="background-color: #0066cc; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold;">🔊 Metni Sesli Dinle (Play Audio)</button>
-      </div>
-      <script>
-      function speakText() {{
-          const text = {json.dumps(listening_text)};
-          const utterance = new SpeechSynthesisUtterance(text);
-          utterance.lang = 'en-US';
-          window.speechSynthesis.speak(utterance);
-      }}
-      </script>
-      """
-      st.components.v1.html(tts_html, height=60)
 
-      st.markdown("### 🎧 Dinleme Anlama Kontrolü")
-      listening_q = st.radio(
-          "Dinlediğiniz veya okuduğunuz diyalog/metne göre ana tema nedir?",
-          [
-              "Günlük rutinler ve temel tanışma kalıpları",
-              "İleri düzey iş hukuku ve sözleşmeler",
-              "Teknik mühendislik terimleri",
-          ],
-          key=f"lst_q_{mod_id}",
+      user_sentence = st.text_input(
+          f"'{target_word_item['term']}' kelimesini kullanarak modül kuralına"
+          " uygun bir İngilizce cümle yazın:",
+          key=f"sentence_input_{mod_id}_{selected_word_idx}",
       )
-      if st.button("Dinleme Cevabını Kontrol Et", key=f"btn_lst_{mod_id}"):
-        if "Günlük" in listening_q:
-          st.success("Tebrikler! Dinleme ana temasını doğru kavradınız. 🎉")
+
+      if st.button(
+          "Cümleyi Kontrol Et ve Onayla",
+          key=f"btn_check_w_{mod_id}_{selected_word_idx}",
+      ):
+        if user_sentence.strip():
+          word_included = (
+              target_word_item["term"].lower() in user_sentence.lower()
+          )
+          word_count = len(user_sentence.split())
+
+          if word_included and word_count >= 3:
+            st.success(
+                f"🎉 Harika! '{target_word_item['term']}' kelimesini doğru bir"
+                " şekilde cümlede kullandınız. Cümle yapınız onaylandı!"
+            )
+            st.balloons()
+          elif not word_included:
+            st.warning(
+                f"⚠️ UYARI: Yazdığınız cümlede '{target_word_item['term']}'"
+                " kelimesi geçmiyor gibi görünüyor. Kelimeyi ekleyerek tekrar"
+                " deneyin."
+            )
+          else:
+            st.info(
+                "👍 Cümleniz alındı ancak A1 seviyesi için biraz kısa oldu. Daha"
+                " uzun ve açıklayıcı bir cümle kurmayı deneyebilirsiniz."
+            )
         else:
-          st.error("Yanlış seçenek. Metnin temel odak noktasını tekrar gözden geçirin.")
+          st.warning("Lütfen boş bırakmayın, örnek bir cümle yazın.")
 
-    with skill_tab3:
+    # 3. SEKME: GRAMMAR PILL (GENİŞLETİLMİŞ ÇOK ADIMLI İNTERAKTİF ATÖLYE)
+    with tab_grammar:
+      grammar = current_module.get("grammar_pill", {})
+      st.header(f"💡 {grammar.get('title', 'Dil Bilgisi Kuralı')}")
+
       st.markdown(
-          '<div class="skill-header">🗣️ Konuşma (Speaking) Simülasyonu ve Telaffuz Pratiği</div>',
+          f"""
+      <div style="background-color: #f8f9fa; padding: 20px; border-radius: 10px; border-left: 5px solid #0066cc; margin-bottom: 20px;">
+          <h4 style="margin-top:0; color:#333;">Kural Açıklaması</h4>
+          <p style="font-size: 16px; color: #444;">{grammar.get('explanation', '')}</p>
+      </div>
+      """,
           unsafe_allow_html=True,
       )
-      st.warning(
-          "📢 **Sınav Görevi:** Aşağıdaki senaryoya göre sesli yanıtınızı hazırlayın ve yazılı taslağınızı sisteme girin."
+
+      st.subheader("📌 Temel Kurallar ve İstisnalar:")
+      for rule in grammar.get("rules", []):
+        st.markdown(f"* **{rule}**")
+
+      # --- ÇOK ADIMLI İNTERAKTİF DİL BİLGİSİ ATÖLYESİ ---
+      st.markdown("---")
+      st.markdown(
+          '<div class="grammar-workshop"><h3>🛠️ Genişletilmiş İnteraktif Dil'
+          ' Bilgisi Atölyesi</h3><p>Bu modülü tam anlamıyla kavramak için'
+          ' aşağıdaki 3 farklı etkileşimli adımı tamamlayın:</p></div>',
+          unsafe_allow_html=True,
+      )
+
+      # Adım 1: Kural Kavrama Testi
+      st.markdown(
+          '<div class="challenge-box"><h4>📌 Adım 1: Temel Kural Testi</h4>',
+          unsafe_allow_html=True,
+      )
+      if mod_id == 1:
+        step1_ans = st.radio(
+            "Sabah saatlerinde karşılaştığınız birine hangi kalıbı söylersiniz?",
+            ["Good evening", "Good morning", "Good night"],
+            key=f"s1_m{mod_id}",
+        )
+        if st.button("Adım 1'i Kontrol Et", key=f"b1_m{mod_id}"):
+          if step1_ans == "Good morning":
+            st.success("Tebrikler, 1. Adımı Başarıyla Geçtiniz! 🎉")
+          else:
+            st.error("Yanlış. Sabahları 'Good morning' tercih edilir.")
+      elif mod_id == 2:
+        step1_ans = st.radio(
+            "Boşluğa uygun 'To Be' formunu seçin: 'He ___ a teacher.'",
+            ["am", "is", "are"],
+            key=f"s1_m{mod_id}",
+        )
+        if st.button("Adım 1'i Kontrol Et", key=f"b1_m{mod_id}"):
+          if step1_ans == "is":
+            st.success("Tebrikler, 1. Adımı Başarıyla Geçtiniz! 🎉")
+          else:
+            st.error("Yanlış. He öznesi ile 'is' kullanılır.")
+      else:
+        step1_ans = st.radio(
+            f"Modül {mod_id} ana kuralını doğru uyguladığınızdan emin misiniz?",
+            ["Evet, kuralları kavradım", "Henüz tam emin değilim"],
+            key=f"s1_m{mod_id}",
+        )
+        if st.button("Adım 1'i Kontrol Et", key=f"b1_m{mod_id}"):
+          st.success("Harika! 1. Adım tamamlandı.")
+      st.markdown("</div>", unsafe_allow_html=True)
+
+      # Adım 2: Cümle Tamamlama / Boşluk Doldurma
+      st.markdown(
+          '<div class="challenge-box"><h4>✍️ Adım 2: Boşluk Doldurma ve Cümle'
+          ' Üretme</h4>',
+          unsafe_allow_html=True,
       )
       st.markdown(
-          f"**Senaryo:** Modül {mod_id} kazanımlarına uygun olarak kendinizi tanıtan veya günlük planınızı anlatan 3 cümlelik akıcı bir konuşma yapın."
+          "Aşağıdaki alana bu modülün gramer yapısına uygun örnek bir cümle"
+          " yazarak sistemden teyit alın:"
       )
-      user_spoken_text = st.text_input(
-          "Konuşma Metni Taslağınız:", key=f"spk_sim_{mod_id}"
+      step2_input = st.text_input(
+          "Modül gramerine uygun İngilizce cümleniz:", key=f"s2_input_{mod_id}"
       )
-      if st.button("Konuşma Performansını Değerlendir", key=f"btn_spk_sim_{mod_id}"):
-        if len(user_spoken_text.strip().split()) >= 3:
+      if st.button("Adım 2'yi Kontrol Et", key=f"b2_m{mod_id}"):
+        if len(step2_input.strip()) >= 5:
           st.success(
-              "🎉 Konuşma provası başarıyla tamamlandı! Kelime akışınız ve cümle yapınız A1 standardına uygundur."
+              "Harika! Cümle yapısı ve uzunluğu kurala uygun görünüyor. 🌟"
+          )
+        else:
+          st.warning(
+              "Lütfen biraz daha uzun ve açıklayıcı bir cümle yazmaya çalışın."
+          )
+      st.markdown("</div>", unsafe_allow_html=True)
+
+      # Adım 3: Hata Ayıklama / Doğrulama Görevi
+      st.markdown(
+          '<div class="challenge-box"><h4>🔍 Adım 3: Hata Ayıklama (Doğru mu'
+          ' Yanlış mı?)</h4>',
+          unsafe_allow_html=True,
+      )
+      st.markdown(
+          "Soru: 'A1 seviyesinde temel kalıpları günlük hayatta ezberlemeden,"
+          " mantığını kavrayarak kullanmak kalıcılığı artırır.'"
+      )
+      step3_ans = st.radio(
+          "Bu ifadeye katılıyor musunuz?",
+          ["Kesinlikle Katılıyorum", "Katılmıyorum"],
+          key=f"s3_m{mod_id}",
+      )
+      if st.button("Atölyeyi Tamamla", key=f"b3_m{mod_id}"):
+        if step3_ans == "Kesinlikle Katılıyorum":
+          st.success(
+              "Mükemmel bakış açısı! Dil bilgisi atölyesini başarıyla"
+              " tamamladınız 🚀"
           )
           st.balloons()
         else:
-          st.warning("Lütfen en az 3 kelimeden oluşan eksiksiz cümleler kurun.")
+          st.info(
+              "Pratik yaptıkça pratiklerin ne kadar faydalı olduğunu"
+              " göreceksiniz."
+          )
+      st.markdown("</div>", unsafe_allow_html=True)
 
-    with skill_tab4:
+    # 4. SEKME: SINAV SİMÜLASYONU (4 TEMEL BECERİ)
+    with tab_exam:
+      st.header("📝 4 Temel Dil Becerisi Sınav Simülasyonu & Yoğun Pratik")
       st.markdown(
-          '<div class="skill-header">✍️ Yazma & Detaylı Rubrik Değerlendirmesi (Writing)</div>',
-          unsafe_allow_html=True,
+          "KET ve telc sınav formatına birebir uygun, çok aşamalı ve anında"
+          " geri bildirimli sınav simülasyon alanındasınız."
       )
-      writing_task_desc = exam.get(
-          "writing_task", "Bu modül için özel yazma görevi bulunmuyor."
-      )
-      st.info(f"📌 **Yazma Görevi Yönergesi:** {writing_task_desc}")
-      user_writing = st.text_area(
-          "İngilizce yanıtınızı buraya yazın:",
-          key=f"writing_sim_{mod_id}",
-          height=150,
-      )
-      if st.button("Yazı Görevini Analiz Et ve Puanla", key=f"submit_w_sim_{mod_id}"):
-        if user_writing.strip():
-          wc = len(user_writing.split())
-          sc = len(user_writing.split('.'))
-          st.markdown("### 📋 Anlık Rubrik Değerlendirmesi")
-          st.markdown(f"- **Kelime Sayısı:** {wc} kelime {'(Yeterli)' if wc >= 10 else '(Biraz kısa)'}")
-          st.markdown(f"- **Cümle Sayısı:** {sc} cümle")
-          st.markdown("- **Dil Bilgisi Doğruluğu:** Modül kurallarına uyum gözlendi. ⭐⭐⭐⭐☆")
-          st.markdown("- **Akıcılık ve Uygunluk:** Hedef kelime hazinesi başarıyla entegre edildi.")
-          st.success("🎉 Yazı simülasyonu başarıyla tamamlandı ve değerlendirildi!")
-        else:
-          st.warning("Lütfen boş bırakmayın, yönergeye uygun metin yazın.")
+
+      exam = current_module.get("exam_simulation", {})
+      skill_tab1, skill_tab2, skill_tab3, skill_tab4 = st.tabs([
+          "📖 Okuma (Reading) Pratiği",
+          "🎧 Dinleme & Anlama (Listening)",
+          "🗣️ Konuşma (Speaking) Simülasyonu",
+          "✍️ Yazma & Rubrik (Writing)",
+      ])
+
+      with skill_tab1:
+        st.markdown(
+            '<div class="skill-header">📖 Okuma Becerisi ve Kapsamlı Anlama'
+            ' Testi</div>',
+            unsafe_allow_html=True,
+        )
+        if "reading" in exam:
+          st.info("Metni dikkatlice okuyunuz ve soruları yanıtlayınız:")
+          st.code(exam["reading"], language="text")
+
+        st.markdown("### 📌 Bölüm 1: Çoktan Seçmeli Sorular")
+        questions = exam.get("questions", [])
+        user_answers = {}
+        for q_idx, q in enumerate(questions):
+          st.markdown(f"**Soru {q_idx + 1}:** {q['q']}")
+          user_choice = st.radio(
+              "Seçiminizi yapın:",
+              q["options"],
+              key=f"q_exam_{mod_id}_{q_idx}",
+          )
+          user_answers[q_idx] = (user_choice, q["answer"])
+
+        if st.button("Okuma Sınavını Değerlendir", key=f"check_ex_r_{mod_id}"):
+          correct_count = 0
+          for q_idx, (chosen, correct) in user_answers.items():
+            if chosen == correct:
+              correct_count += 1
+              st.success(f"Soru {q_idx + 1}: Doğru! 🎉")
+            else:
+              st.error(
+                  f"Soru {q_idx + 1}: Yanlış. Doğru cevap: **{correct}**"
+              )
+          st.info(
+              f"📊 Okuma Simülasyonu Sonucu: {len(questions)} soruda"
+              f" {correct_count} doğru."
+          )
+
+      with skill_tab2:
+        st.markdown(
+            '<div class="skill-header">🎧 Dinleme & Anlama (Listening'
+            ' Comprehension)</div>',
+            unsafe_allow_html=True,
+        )
+        listening_text = exam.get(
+            "reading", "Audio script unavailable for this module."
+        )
+        st.text_area(
+            "Dinleme Metni / Transkript:",
+            value=listening_text,
+            height=100,
+            disabled=True,
+        )
+
+        tts_html = f"""
+        <div style="margin-bottom: 15px;">
+            <button onclick="speakText()" style="background-color: #0066cc; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold;">🔊 Metni Sesli Dinle (Play Audio)</button>
+        </div>
+        <script>
+        function speakText() {{
+            const text = {json.dumps(listening_text)};
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'en-US';
+            window.speechSynthesis.speak(utterance);
+        }}
+        </script>
+        """
+        st.components.v1.html(tts_html, height=60)
+
+        st.markdown("### 🎧 Dinleme Anlama Kontrolü")
+        listening_q = st.radio(
+            "Dinlediğiniz veya okuduğunuz diyalog/metne göre ana tema nedir?",
+            [
+                "Günlük rutinler ve temel tanışma kalıpları",
+                "İleri düzey iş hukuku ve sözleşmeler",
+                "Teknik mühendislik terimleri",
+            ],
+            key=f"lst_q_{mod_id}",
+        )
+        if st.button("Dinleme Cevabını Kontrol Et", key=f"btn_lst_{mod_id}"):
+          if "Günlük" in listening_q:
+            st.success(
+                "Tebrikler! Dinleme ana temasını doğru kavradınız. 🎉"
+            )
+          else:
+            st.error(
+                "Yanlış seçenek. Metnin temel odak noktasını tekrar gözden"
+                " geçirin."
+            )
+
+      with skill_tab3:
+        st.markdown(
+            '<div class="skill-header">🗣️ Konuşma (Speaking) Simülasyonu ve'
+            ' Telaffuz Pratiği</div>',
+            unsafe_allow_html=True,
+        )
+        st.warning(
+            "📢 **Sınav Görevi:** Aşağıdaki senaryoya göre sesli yanıtınızı"
+            " hazırlayın ve yazılı taslağınızı sisteme girin."
+        )
+        st.markdown(
+            f"**Senaryo:** Modül {mod_id} kazanımlarına uygun olarak"
+            " kendinizi tanıtan veya günlük planınızı anlatan 3 cümlelik"
+            " akıcı bir konuşma yapın."
+        )
+        user_spoken_text = st.text_input(
+            "Konuşma Metni Taslağınız:", key=f"spk_sim_{mod_id}"
+        )
+        if st.button(
+            "Konuşma Performansını Değerlendir",
+            key=f"btn_spk_sim_{mod_id}",
+        ):
+          if len(user_spoken_text.strip().split()) >= 3:
+            st.success(
+                "🎉 Konuşma provası başarıyla tamamlandı! Kelime akışınız ve"
+                " cümle yapınız A1 standardına uygundur."
+            )
+            st.balloons()
+          else:
+            st.warning("Lütfen en az 3 kelimeden oluşan eksiksiz cümleler kurun.")
+
+      with skill_tab4:
+        st.markdown(
+            '<div class="skill-header">✍️ Yazma & Detaylı Rubrik'
+            ' Değerlendirmesi (Writing)</div>',
+            unsafe_allow_html=True,
+        )
+        writing_task_desc = exam.get(
+            "writing_task", "Bu modül için özel yazma görevi bulunmuyor."
+        )
+        st.info(f"📌 **Yazma Görevi Yönergesi:** {writing_task_desc}")
+        user_writing = st.text_area(
+            "İngilizce yanıtınızı buraya yazın:",
+            key=f"writing_sim_{mod_id}",
+            height=150,
+        )
+        if st.button(
+            "Yazı Görevini Analiz Et ve Puanla", key=f"submit_w_sim_{mod_id}"
+        ):
+          if user_writing.strip():
+            wc = len(user_writing.split())
+            sc = len(user_writing.split("."))
+            st.markdown("### 📋 Anlık Rubrik Değerlendirmesi")
+            st.markdown(
+                f"- **Kelime Sayısı:** {wc} kelime"
+                f" {'(Yeterli)' if wc >= 10 else '(Biraz kısa)'}"
+            )
+            st.markdown(f"- **Cümle Sayısı:** {sc} cümle")
+            st.markdown(
+                "- **Dil Bilgisi Doğruluğu:** Modül kurallarına uyum gözlendi."
+                " ⭐⭐⭐⭐☆"
+            )
+            st.markdown(
+                "- **Akıcılık ve Uygunluk:** Hedef kelime hazinesi başarıyla"
+                " entegre edildi."
+            )
+            st.success(
+                "🎉 Yazı simülasyonu başarıyla tamamlandı ve değerlendirildi!"
+            )
+          else:
+            st.warning("Lütfen boş bırakmayın, yönergeye uygun metin yazın.")
