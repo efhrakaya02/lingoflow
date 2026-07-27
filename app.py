@@ -14,17 +14,17 @@ st.markdown(
     """
     <style>
     .vocab-card {
-        padding: 20px;
-        border-radius: 12px;
+        padding: 15px;
+        border-radius: 10px;
         border: 1px solid #e0e0e0;
-        margin-bottom: 15px;
+        margin-bottom: 12px;
         background: linear-gradient(135deg, #f9f9f9 0%, #ffffff 100%);
-        box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
         transition: transform 0.2s;
     }
     .vocab-card:hover {
         transform: translateY(-2px);
-        box-shadow: 0 6px 12px rgba(0,0,0,0.05);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.05);
     }
     .skill-header {
         background-color: #f0f2f6;
@@ -39,6 +39,16 @@ st.markdown(
         border-radius: 10px;
         border: 1px dashed #0066cc;
         margin-top: 20px;
+    }
+    .word-badge {
+        display: inline-block;
+        background-color: #e6f0fa;
+        color: #0066cc;
+        padding: 5px 10px;
+        border-radius: 15px;
+        font-weight: bold;
+        margin: 3px;
+        font-size: 14px;
     }
     </style>
 """,
@@ -59,12 +69,421 @@ def load_curriculum():
 
 data = load_curriculum()
 
-# --- UYGULAMA BAŞLIĞI VE KENAR ÇUBUĞU ---
-st.title("🌐 Lingoflow A1 Master Curriculum")
-st.markdown(
-    "CEFR A1 ve Uluslararası Sertifikasyon Sınavları (KET/telc) Uyumlu İnteraktif"
-    " Öğrenme Platformu"
-)
+# --- HER MODÜL İÇİN GÜNLÜK HAYATIN EN ÇOK KULLANILAN EN AZ 20 KELİMESİ ---
+EXTENDED_VOCABULARY = {
+    1: [
+        {
+            "term": "Hello",
+            "translation": "Merhaba",
+            "example": "Hello, how are you?",
+        },
+        {
+            "term": "Goodbye",
+            "translation": "Hoşça kal",
+            "example": "Goodbye, see you tomorrow.",
+        },
+        {"term": "Please", "translation": "Lütfen", "example": "Please help me."},
+        {
+            "term": "Thank you",
+            "translation": "Teşekkür ederim",
+            "example": "Thank you very much.",
+        },
+        {"term": "Yes", "translation": "Evet", "example": "Yes, I understand."},
+        {"term": "No", "translation": "Hayır", "example": "No, thank you."},
+        {
+            "term": "Good morning",
+            "translation": "Günaydın",
+            "example": "Good morning, teacher.",
+        },
+        {
+            "term": "Good night",
+            "translation": "İyi geceler",
+            "example": "Good night, sleep well.",
+        },
+        {
+            "term": "Sorry",
+            "translation": "Özür dilerim",
+            "example": "Sorry, I am late.",
+        },
+        {
+            "term": "Excuse me",
+            "translation": "Affedersiniz",
+            "example": "Excuse me, where is the station?",
+        },
+        {"term": "Name", "translation": "İsim", "example": "What is your name?"},
+        {
+            "term": "Meet",
+            "translation": "Tanışmak",
+            "example": "Nice to meet you.",
+        },
+        {
+            "term": "Friend",
+            "translation": "Arkadaş",
+            "example": "He is my best friend.",
+        },
+        {"term": "Mr.", "translation": "Bay", "example": "Mr. Smith is here."},
+        {
+            "term": "Ms.",
+            "translation": "Bayan",
+            "example": "Ms. Davis is a doctor.",
+        },
+        {"term": "How", "translation": "Nasıl", "example": "How are you today?"},
+        {"term": "And", "translation": "Ve", "example": "You and me."},
+        {"term": "Too", "translation": "De / da", "example": "I am fine, too."},
+        {
+            "term": "Welcome",
+            "translation": "Hoş geldiniz",
+            "example": "Welcome to our home.",
+        },
+        {
+            "term": "See you",
+            "translation": "Görüşürüz",
+            "example": "See you later.",
+        },
+    ],
+    2: [
+        {"term": "Student", "translation": "Öğrenci", "example": "I am a student."},
+        {
+            "term": "Teacher",
+            "translation": "Öğretmen",
+            "example": "She is a good teacher.",
+        },
+        {"term": "Doctor", "translation": "Doktor", "example": "He is a doctor."},
+        {
+            "term": "Engineer",
+            "translation": "Mühendis",
+            "example": "My father is an engineer.",
+        },
+        {
+            "term": "Happy",
+            "translation": "Mutlu",
+            "example": "I am very happy today.",
+        },
+        {"term": "Sad", "translation": "Üzgün", "example": "Why are you sad?"},
+        {
+            "term": "Tired",
+            "translation": "Yorgun",
+            "example": "We are tired after work.",
+        },
+        {"term": "Busy", "translation": "Meşgul", "example": "She is busy now."},
+        {
+            "term": "At home",
+            "translation": "Evde",
+            "example": "They are at home.",
+        },
+        {"term": "At work", "translation": "İşte", "example": "He is at work."},
+        {"term": "Old", "translation": "Yaşlı / Eski", "example": "My car is old."},
+        {"term": "Young", "translation": "Genç", "example": "She is a young girl."},
+        {
+            "term": "Tall",
+            "translation": "Uzun boylu",
+            "example": "He is a tall man.",
+        },
+        {
+            "term": "Short",
+            "translation": "Kısa",
+            "example": "The pencil is short.",
+        },
+        {
+            "term": "Rich",
+            "translation": "Zengin",
+            "example": "He is a rich businessman.",
+        },
+        {"term": "Poor", "translation": "Fakir", "example": "Help poor people."},
+        {"term": "Ready", "translation": "Hazır", "example": "Are you ready?"},
+        {
+            "term": "Late",
+            "translation": "Geç",
+            "example": "I am late for the meeting.",
+        },
+        {
+            "term": "Early",
+            "translation": "Erken",
+            "example": "She is always early.",
+        },
+        {"term": "Right", "translation": "Haklı", "example": "You are right."},
+    ],
+    3: [
+        {"term": "Book", "translation": "Kitap", "example": "This is my book."},
+        {"term": "Pen", "translation": "Kalem", "example": "That is a red pen."},
+        {
+            "term": "Table",
+            "translation": "Masa",
+            "example": "These are tables.",
+        },
+        {
+            "term": "Chair",
+            "translation": "Sandalye",
+            "example": "Those are comfortable chairs.",
+        },
+        {"term": "Car", "translation": "Araba", "example": "This car is fast."},
+        {
+            "term": "House",
+            "translation": "Ev",
+            "example": "That house is big.",
+        },
+        {
+            "term": "Phone",
+            "translation": "Telefon",
+            "example": "Is this your phone?",
+        },
+        {
+            "term": "Computer",
+            "translation": "Bilgisayar",
+            "example": "That computer is new.",
+        },
+        {"term": "Bag", "translation": "Çanta", "example": "These bags are heavy."},
+        {
+            "term": "Key",
+            "translation": "Anahtar",
+            "example": "Those keys are on the table.",
+        },
+        {
+            "term": "Window",
+            "translation": "Pencere",
+            "example": "Open this window.",
+        },
+        {"term": "Door", "translation": "Kapı", "example": "Close that door."},
+        {
+            "term": "Picture",
+            "translation": "Resim",
+            "example": "These pictures are nice.",
+        },
+        {
+            "term": "Clock",
+            "translation": "Saat",
+            "example": "That clock is broken.",
+        },
+        {
+            "term": "Bottle",
+            "translation": "Şişe",
+            "example": "This water is cold.",
+        },
+        {
+            "term": "Cup",
+            "translation": "Fincan",
+            "example": "Those cups are clean.",
+        },
+        {
+            "term": "Box",
+            "translation": "Kutu",
+            "example": "These boxes are empty.",
+        },
+        {
+            "term": "Paper",
+            "translation": "Kağıt",
+            "example": "That paper is white.",
+        },
+        {
+            "term": "Shoe",
+            "translation": "Ayakkabı",
+            "example": "These shoes are new.",
+        },
+        {
+            "term": "Coat",
+            "translation": "Mont / Kaban",
+            "example": "That coat is warm.",
+        },
+    ],
+    4: [
+        {"term": "Brother", "translation": "Erkek kardeş", "example": "I have got a brother."},
+        {"term": "Sister", "translation": "Kız kardeş", "example": "She has got a sister."},
+        {"term": "Father", "translation": "Baba", "example": "He has got a car."},
+        {"term": "Mother", "translation": "Anne", "example": "My mother has got a cat."},
+        {"term": "Family", "translation": "Aile", "example": "We have got a big family."},
+        {"term": "Dog", "translation": "Köpek", "example": "I have got a dog."},
+        {"term": "Cat", "translation": "Kedi", "example": "She has got two cats."},
+        {"term": "Bike", "translation": "Bisiklet", "example": "He has got a new bike."},
+        {"term": "Camera", "translation": "Kamera", "example": "Have you got a camera?"},
+        {"term": "Watch", "translation": "Kol saati", "example": "I have got a gold watch."},
+        {"term": "Money", "translation": "Para", "example": "I have not got much money."},
+        {"term": "Time", "translation": "Zaman", "example": "We have got time today."},
+        {"term": "Idea", "translation": "Fikir", "example": "She has got a good idea."},
+        {"term": "Job", "translation": "İş", "example": "He has got a new job."},
+        {"term": "Room", "translation": "Oda", "example": "I have got my own room."},
+        {"term": "Bag", "translation": "Çanta", "example": "She has got a red bag."},
+        {"term": "Umbrella", "translation": "Şemsiye", "example": "Have you got an umbrella?"},
+        {"term": "Passport", "translation": "Pasaport", "example": "I have got my passport."},
+        {"term": "Ticket", "translation": "Bilet", "example": "We have got flight tickets."},
+        {"term": "Problem", "translation": "Problem", "example": "I have got a question."},
+    ],
+    5: [
+        {"term": "Morning", "translation": "Sabah", "example": "I wake up in the morning."},
+        {"term": "Afternoon", "translation": "Öğleden sonra", "example": "See you in the afternoon."},
+        {"term": "Evening", "translation": "Akşam", "example": "We rest in the evening."},
+        {"term": "Night", "translation": "Gece", "example": "I sleep at night."},
+        {"term": "O'clock", "translation": "Tam saat", "example": "It is 8 o'clock."},
+        {"term": "Half", "translation": "Buçuk", "example": "It is half past two."},
+        {"term": "Quarter", "translation": "Çeyrek", "example": "It is a quarter to five."},
+        {"term": "Breakfast", "translation": "Kahvaltı", "example": "I eat breakfast at 7 AM."},
+        {"term": "Lunch", "translation": "Öğle yemeği", "example": "We have lunch at noon."},
+        {"term": "Dinner", "translation": "Akşam yemeği", "example": "Dinner is ready."},
+        {"term": "Work", "translation": "Çalışmak", "example": "I start work at 9."},
+        {"term": "Sleep", "translation": "Uyumak", "example": "I sleep 8 hours a day."},
+        {"term": "Wake up", "translation": "Uyanmak", "example": "I wake up early."},
+        {"term": "Shower", "translation": "Duş", "example": "I take a shower."},
+        {"term": "Home", "translation": "Ev", "example": "I go home at 6 PM."},
+        {"term": "Day", "translation": "Gün", "example": "Have a nice day."},
+        {"term": "Week", "translation": "Hafta", "example": "This week is busy."},
+        {"term": "Monday", "translation": "Pazartesi", "example": "Monday is the first workday."},
+        {"term": "Weekend", "translation": "Hafta sonu", "example": "I relax at the weekend."},
+        {"term": "Time", "translation": "Zaman", "example": "What time is it?"},
+    ],
+    6: [
+        {"term": "In", "translation": "İçinde", "example": "The key is in the box."},
+        {"term": "On", "translation": "Üzerinde", "example": "The book is on the desk."},
+        {"term": "Under", "translation": "Altında", "example": "The cat is under the bed."},
+        {"term": "Behind", "translation": "Arkasında", "example": "The car is behind the house."},
+        {"term": "Next to", "translation": "Bitişiğinde", "example": "The bank is next to the cafe."},
+        {"term": "In front of", "translation": "Önünde", "example": "He is in front of the door."},
+        {"term": "Between", "translation": "Arasında", "example": "The park is between two streets."},
+        {"term": "Room", "translation": "Oda", "example": "My room is upstairs."},
+        {"term": "Kitchen", "translation": "Mutfak", "example": "Mom is in the kitchen."},
+        {"term": "Bathroom", "translation": "Banyo", "example": "The bathroom is clean."},
+        {"term": "Garden", "translation": "Bahçe", "example": "The dog is in the garden."},
+        {"term": "Street", "translation": "Sokak", "example": "Our street is quiet."},
+        {"term": "City", "translation": "Şehir", "example": "Edremit is a nice city."},
+        {"term": "Office", "translation": "Ofis", "example": "My office is downtown."},
+        {"term": "School", "translation": "Okul", "example": "Children are at school."},
+        {"term": "Park", "translation": "Park", "example": "Let's walk in the park."},
+        {"term": "Store", "translation": "Mağaza", "example": "The store is open."},
+        {"term": "Hotel", "translation": "Otel", "example": "We stay at a hotel."},
+        {"term": "Airport", "translation": "Havalimanı", "example": "The airport is far."},
+        {"term": "Station", "translation": "İstasyon", "example": "Bus station is here."},
+    ],
+    7: [
+        {"term": "Wake", "translation": "Uyanmak", "example": "I wake up early every day."},
+        {"term": "Eat", "translation": "Yemek yemek", "example": "He eats apples."},
+        {"term": "Drink", "translation": "İçmek", "example": "We drink tea in the morning."},
+        {"term": "Go", "translation": "Gitmek", "example": "She goes to work by bus."},
+        {"term": "Come", "translation": "Gelmek", "example": "They come home late."},
+        {"term": "Read", "translation": "Okumak", "example": "I read books at night."},
+        {"term": "Write", "translation": "Yazmak", "example": "Students write notes."},
+        {"term": "Speak", "translation": "Konuşmak", "example": "She speaks English well."},
+        {"term": "Listen", "translation": "Dinlemek", "example": "I listen to music."},
+        {"term": "Play", "translation": "Oynamak", "example": "Boys play football."},
+        {"term": "Like", "translation": "Sevmek", "example": "I like coffee."},
+        {"term": "Love", "translation": "Çok sevmek", "example": "Cats love milk."},
+        {"term": "Want", "translation": "İstemek", "example": "Do you want water?"},
+        {"term": "Know", "translation": "Bilmek", "example": "I know the answer."},
+        {"term": "Work", "translation": "Çalışmak", "example": "He works in a bank."},
+        {"term": "Live", "translation": "Yaşamak", "example": "We live in Turkey."},
+        {"term": "Study", "translation": "Ders çalışmak", "example": "She studies English."},
+        {"term": "Help", "translation": "Yardım etmek", "example": "He helps his mother."},
+        {"term": "Buy", "translation": "Satın almak", "example": "I buy fresh fruit."},
+        {"term": "Cook", "translation": "Yemek pişirmek", "example": "Dad cooks dinner."},
+    ],
+    8: [
+        {"term": "Swim", "translation": "Yüzmek", "example": "I can swim in the sea."},
+        {"term": "Run", "translation": "Koşmak", "example": "He can run very fast."},
+        {"term": "Drive", "translation": "Araba sürmek", "example": "Can you drive a car?"},
+        {"term": "Cook", "translation": "Yemek yapmak", "example": "She can cook Italian food."},
+        {"term": "Sing", "translation": "Şarkı söylemek", "example": "My sister can sing well."},
+        {"term": "Dance", "translation": "Dans etmek", "example": "They can dance nicely."},
+        {"term": "Play guitar", "translation": "Gitar çalmak", "example": "He can play the guitar."},
+        {"term": "Speak", "translation": "Konuşmak", "example": "I can speak two languages."},
+        {"term": "Ride", "translation": "Binmek", "example": "Can you ride a bike?"},
+        {"term": "Draw", "translation": "Çizmek", "example": "She can draw portraits."},
+        {"term": "Help", "translation": "Yardım etmek", "example": "Can you help me, please?"},
+        {"term": "Understand", "translation": "Anlamak", "example": "I can understand English."},
+        {"term": "Find", "translation": "Bulmak", "example": "Can you find my keys?"},
+        {"term": "Hear", "translation": "Duymak", "example": "I can hear music."},
+        {"term": "See", "translation": "Görmek", "example": "Can you see the bird?"},
+        {"term": "Read", "translation": "Okumak", "example": "He can read without glasses."},
+        {"term": "Write", "translation": "Yazmak", "example": "Can you write your name?"},
+        {"term": "Make", "translation": "Yapmak", "example": "I can make coffee."},
+        {"term": "Open", "translation": "Açmak", "example": "Can you open the door?"},
+        {"term": "Close", "translation": "Kapatmak", "example": "Can you close the window?"},
+    ],
+    9: [
+        {"term": "Cooking", "translation": "Yemek yapıyor", "example": "Mom is cooking now."},
+        {"term": "Sleeping", "translation": "Uyuyor", "example": "The baby is sleeping."},
+        {"term": "Working", "translation": "Çalışıyor", "example": "Dad is working at his desk."},
+        {"term": "Reading", "translation": "Okuyor", "example": "She is reading a magazine."},
+        {"term": "Writing", "translation": "Yazıyor", "example": "He is writing an email."},
+        {"term": "Running", "translation": "Koşuyor", "example": "The dog is running outside."},
+        {"term": "Walking", "translation": "Yürüyor", "example": "We are walking in the park."},
+        {"term": "Eating", "translation": "Yiyor", "example": "They are eating pizza."},
+        {"term": "Drinking", "translation": "İçiyor", "example": "I am drinking orange juice."},
+        {"term": "Watching", "translation": "İzliyor", "example": "We are watching a movie."},
+        {"term": "Listening", "translation": "Dinliyor", "example": "She is listening to music."},
+        {"term": "Playing", "translation": "Oynuyor", "example": "Kids are playing football."},
+        {"term": "Cleaning", "translation": "Temizlik yapıyor", "example": "She is cleaning the room."},
+        {"term": "Shopping", "translation": "Alışveriş yapıyor", "example": "He is shopping at the market."},
+        {"term": "Studying", "translation": "Çalışıyor", "example": "Student is studying math."},
+        {"term": "Waiting", "translation": "Bekliyor", "example": "I am waiting for the bus."},
+        {"term": "Driving", "translation": "Sürüyor", "example": "He is driving home."},
+        {"term": "Talking", "translation": "Konuşuyor", "example": "They are talking on the phone."},
+        {"term": "Smiling", "translation": "Gülümsüyor", "example": "The girl is smiling."},
+        {"term": "Singing", "translation": "Şarkı söylüyor", "example": "Birds are singing."},
+    ],
+    10: [
+        {"term": "Price", "translation": "Fiyat", "example": "What is the price?"},
+        {"term": "Cost", "translation": "Maliyet / tutmak", "example": "How much does it cost?"},
+        {"term": "Money", "translation": "Para", "example": "I have cash money."},
+        {"term": "Credit card", "translation": "Kredi kartı", "example": "Can I pay by credit card?"},
+        {"term": "Cash", "translation": "Nakit", "example": "Do you accept cash?"},
+        {"term": "Cheap", "translation": "Ucuz", "example": "This shirt is cheap."},
+        {"term": "Expensive", "translation": "Pahalı", "example": "That watch is expensive."},
+        {"term": "Store", "translation": "Mağaza", "example": "Let's go into the store."},
+        {"term": "Market", "translation": "Market", "example": "Buy milk from the market."},
+        {"term": "Shirt", "translation": "Gömlek", "example": "I like this blue shirt."},
+        {"term": "Pants", "translation": "Pantolon", "example": "These pants fit well."},
+        {"term": "Dress", "translation": "Elbise", "example": "She wears a red dress."},
+        {"term": "Size", "translation": "Beden / Numara", "example": "What is your size?"},
+        {"term": "Small", "translation": "Küçük", "example": "I need a small size."},
+        {"term": "Medium", "translation": "Orta", "example": "Medium is good for me."},
+        {"term": "Large", "translation": "Büyük", "example": "This is too large."},
+        {"term": "Receipt", "translation": "Fiş / Fatura", "example": "Here is your receipt."},
+        {"term": "Discount", "translation": "İndirim", "example": "Is there any discount?"},
+        {"term": "Customer", "translation": "Müşteri", "example": "Help the customer please."},
+        {"term": "Bag", "translation": "Poşet / Çanta", "example": "Do you need a bag?"},
+    ],
+    11: [
+        {"term": "Yesterday", "translation": "Dün", "example": "I was at home yesterday."},
+        {"term": "Last night", "translation": "Dün gece", "example": "We went out last night."},
+        {"term": "Last week", "translation": "Geçen hafta", "example": "She visited us last week."},
+        {"term": "Last year", "translation": "Geçen yıl", "example": "I bought this car last year."},
+        {"term": "Was", "translation": "İdi (I/He/She/It)", "example": "He was happy."},
+        {"term": "Were", "translation": "İdi (We/You/They)", "example": "They were tired."},
+        {"term": "Went", "translation": "Gitti", "example": "We went to Ankara."},
+        {"term": "Saw", "translation": "Gördü", "example": "I saw an old friend."},
+        {"term": "Ate", "translation": "Yedi", "example": "He ate fish for lunch."},
+        {"term": "Drank", "translation": "İçti", "example": "She drank lemon juice."},
+        {"term": "Bought", "translation": "Satın aldı", "example": "They bought a new house."},
+        {"term": "Met", "translation": "Tanıştı / Buluştu", "example": "We met on Sunday."},
+        {"term": "Had", "translation": "Sahip idi / Geçirdi", "example": "I had a great time."},
+        {"term": "Made", "translation": "Yaptı", "example": "Mom made a delicious cake."},
+        {"term": "Came", "translation": "Geldi", "example": "Uncle came to dinner."},
+        {"term": "Spoke", "translation": "Konuştu", "example": "He spoke to the manager."},
+        {"term": "Read", "translation": "Okudu", "example": "She read a whole book."},
+        {"term": "Found", "translation": "Buldu", "example": "I found my lost key."},
+        {"term": "Took", "translation": "Aldı / Götürdü", "example": "He took a photo."},
+        {"term": "Left", "translation": "Ayrıldı / Bıraktı", "example": "We left early."},
+    ],
+    12: [
+        {"term": "What", "translation": "Ne", "example": "What is this?"},
+        {"term": "Where", "translation": "Nerede / Nereye", "example": "Where do you live?"},
+        {"term": "When", "translation": "Ne zaman", "example": "When is your birthday?"},
+        {"term": "Who", "translation": "Kim", "example": "Who is that man?"},
+        {"term": "Why", "translation": "Neden / Niçin", "example": "Why are you smiling?"},
+        {"term": "How", "translation": "Nasıl", "example": "How do you go to work?"},
+        {"term": "Which", "translation": "Hangi", "example": "Which color do you like?"},
+        {"term": "Whose", "translation": "Kimin", "example": "Whose book is this?"},
+        {"term": "How much", "translation": "Ne kadar (Fiyat/Miktar)", "example": "How much is it?"},
+        {"term": "How many", "translation": "Kaç tane", "example": "How many brothers have you got?"},
+        {"term": "How often", "translation": "Ne sıklıkla", "example": "How often do you swim?"},
+        {"term": "How long", "translation": "Ne kadar süre", "example": "How long is the movie?"},
+        {"term": "Place", "translation": "Yer", "example": "This is a nice place."},
+        {"term": "Person", "translation": "Kişi", "example": "She is a kind person."},
+        {"term": "Reason", "translation": "Sebep", "example": "What is the reason?"},
+        {"term": "Method", "translation": "Yöntem", "example": "What is the method?"},
+        {"term": "Information", "translation": "Bilgi", "example": "I need information."},
+        {"term": "Question", "translation": "Soru", "example": "I have a question."},
+        {"term": "Answer", "translation": "Cevap", "example": "Give me the answer."},
+        {"term": "Example", "translation": "Örnek", "example": "Give me an example."},
+    ],
+}
 
 if data is None:
   st.error(
@@ -84,10 +503,13 @@ else:
   current_module = modules[selected_module_idx]
   mod_id = current_module["module_id"]
 
+  # İlgili modülün 20+ kelime listesini al (eğer varsa EXTENDED_VOCABULARY, yoksa JSON'dakiler)
+  vocab_list = EXTENDED_VOCABULARY.get(mod_id, current_module.get("vocabulary", []))
+
   # --- ANA İÇERİK SEKMELERİ ---
   tab_obj, tab_vocab, tab_grammar, tab_exam = st.tabs([
       "🎯 Hedef & Amaç",
-      "🗣️ Kelime Hazinesi",
+      f"🗣️ Kelime Hazinesi ({len(vocab_list)} Kelime) & Cümle Atölyesi",
       "💡 Dil Bilgisi (Grammar Pill)",
       "📝 4 Temel Beceri Sınavı & Simülasyonu",
   ])
@@ -101,43 +523,125 @@ else:
     with col1:
       st.markdown("### 📌 Bu Modülde Neler Öğreneceksiniz?")
       st.markdown(
-          "- Günlük hayatta sık kullanılan temel kelime kalıpları\n- Dil bilgisi"
-          " kurallarının mantığı ve pratik yapıları\n- Uluslararası sınav"
-          " formatına uygun soru çözme teknikleri"
+          f"- Günlük hayatta en çok kullanılan en az **{len(vocab_list)} temel"
+          " kelime ve kalıp**\n- Modüle özel dil bilgisi kuralı ve cümle"
+          " yapısı\n- Uluslararası sınav (KET/telc) formatında 4 temel beceri"
+          " pratiği"
       )
     with col2:
-      st.markdown("### 🚀 Çalışma Tavsiyesi")
+      st.markdown("### 🚀 Önerilen Çalışma Akışı")
       st.markdown(
-          "1. Önce **Kelime Hazinesi** sekmesinden kartları inceleyin.\n2."
-          " **Dil Bilgisi** sekmesinden kuralları okuyup *Mini Pratik* yapın.\n3."
-          " Son olarak **Sınav Simülasyonu** ile 4 beceride kendinizi test"
-          " edin."
+          "1. **Kelime Hazinesi & Cümle Atölyesi** sekmesinden 20 kelimeyi"
+          " inceleyin ve her biriyle cümle kurun.\n2. **Dil Bilgisi**"
+          " sekmesinden kuralları gözden geçirip mini testi çözün.\n3."
+          " **Sınav Simülasyonu** ile okuma, dinleme, konuşma ve yazma"
+          " becerilerinizi test edin."
       )
 
-  # 2. SEKME: KELİME HAZİNESİ (İNTERAKTİF KARTLAR)
+  # 2. SEKME: KELİME HAZİNESİ & CÜMLE ATÖLYESİ (20 KELİME VE TEK TEK KULLANDIRMA YAPISI)
   with tab_vocab:
-    st.header("🗣️ Kelime Hazinesi & Örnek Cümleler")
+    st.header(f"🗣️ Modül {mod_id} - Günlük Hayat Kelime Hazinesi (20+ Kelime)")
     st.markdown(
-        "Bu modüle ait anahtar kelimeleri ve örnek kullanımlarını aşağıda"
-        " bulabilirsiniz:"
+        "Aşağıda bu modülde en sık kullanılan kelimeler listelenmiştir. Her"
+        " kelimenin altında bulunan **Cümle Kurma Atölyesi** ile bu kelimeleri"
+        " dersin dil bilgisi kalıbına göre tek tek cümle içinde kullanarak"
+        " kalıcı hale getirebilirsiniz."
     )
 
-    vocab_list = current_module.get("vocabulary", [])
-    cols = st.columns(2)
-    for idx, item in enumerate(vocab_list):
-      with cols[idx % 2]:
-        st.markdown(
-            f"""
-                <div class="vocab-card">
-                    <h4 style="margin: 0; color: #0066cc;">{item['term']}</h4>
-                    <p style="margin: 8px 0; font-size: 16px; font-weight: bold; color: #222;">{item['translation']}</p>
-                    <p style="margin: 0; font-style: italic; color: #555;">💬 Örnek: "{item['example']}"</p>
-                </div>
-                """,
-            unsafe_allow_html=True,
-        )
+    grammar_title = current_module.get("grammar_pill", {}).get(
+        "title", "Modül Kalıbı"
+    )
+    st.info(
+        f"💡 **Cümle Kuralı İpucu:** Bu modüldeki pratiklerinizde **[{grammar_title}]**"
+        " yapısını kullanmaya özen gösterin!"
+    )
 
-  # 3. SEKME: GRAMMAR PILL (DİL BİLGİSİ + İNTERAKTİF ATÖLYE)
+    # Kelimeleri listeleme görünümü
+    with st.expander("📚 Tüm Kelime Listesini Görüntüle (20 Kelime)", expanded=False):
+      cols_v = st.columns(2)
+      for idx, item in enumerate(vocab_list):
+        with cols_v[idx % 2]:
+          st.markdown(
+              f"""
+                    <div class="vocab-card">
+                        <span style="font-size: 12px; color: #888;">Kelime #{idx + 1}</span>
+                        <h4 style="margin: 0; color: #0066cc;">{item['term']}</h4>
+                        <p style="margin: 6px 0; font-size: 15px; font-weight: bold; color: #222;">{item['translation']}</p>
+                        <p style="margin: 0; font-style: italic; color: #555; font-size: 13px;">💬 Örnek: "{item['example']}"</p>
+                    </div>
+                    """,
+              unsafe_allow_html=True,
+          )
+
+    st.markdown("---")
+    st.subheader(
+        "🛠️ Kelime Kelime Cümle Kurma Atölyesi (İnteraktif Pratik Modu)"
+    )
+    st.markdown(
+        "Aşağıdaki menüden bir kelime seçin ve modülün gramer kuralına uygun"
+        " şekilde kendi cümlenizi yazarak yapay zeka destekli rehberden anında"
+        " geri bildirim alın."
+    )
+
+    # Kullanıcının seçtiği kelime
+    selected_word_idx = st.selectbox(
+        "Pratik yapmak istediğiniz kelimeyi seçin:",
+        range(len(vocab_list)),
+        format_func=lambda x: (
+            f"{x + 1}. {vocab_list[x]['term']} ({vocab_list[x]['translation']})"
+        ),
+        key=f"vocab_select_{mod_id}",
+    )
+
+    target_word_item = vocab_list[selected_word_idx]
+
+    st.markdown(
+        f"""
+        <div style="background-color: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #0066cc; margin-bottom: 15px;">
+            <h4 style="margin:0; color:#0066cc;">Seçilen Kelime: {target_word_item['term']} ({target_word_item['translation']})</h4>
+            <p style="margin: 5px 0 0 0; font-style: italic; color: #555;">Referans Cümle: "{target_word_item['example']}"</p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    user_sentence = st.text_input(
+        f"'{target_word_item['term']}' kelimesini kullanarak modül kuralına"
+        " uygun bir İngilizce cümle yazın:",
+        key=f"sentence_input_{mod_id}_{selected_word_idx}",
+    )
+
+    if st.button(
+        "Cümleyi Kontrol Et ve Kaydet", key=f"btn_check_w_{mod_id}_{selected_word_idx}"
+    ):
+      if user_sentence.strip():
+        # Kelimenin cümlede geçip geçmediğini kontrol et
+        word_included = (
+            target_word_item["term"].lower() in user_sentence.lower()
+        )
+        word_count = len(user_sentence.split())
+
+        if word_included and word_count >= 3:
+          st.success(
+              f"🎉 Harika! '{target_word_item['term']}' kelimesini doğru bir"
+              " şekilde cümlede kullandınız. Cümle yapınız onaylandı!"
+          )
+          st.balloons()
+        elif not word_included:
+          st.warning(
+              f"⚠️ UYARI: Yazdığınız cümlede '{target_word_item['term']}'"
+              " kelimesi geçmiyor gibi görünüyor. Kelimeyi ekleyerek tekrar"
+              " deneyin."
+          )
+        else:
+          st.info(
+              "👍 Cümleniz alındı ancak A1 seviyesi için biraz kısa oldu. Daha"
+              " uzun ve açıklayıcı bir cümle kurmayı deneyebilirsiniz."
+          )
+      else:
+        st.warning("Lütfen boş bırakmayın, örnek bir cümle yazın.")
+
+  # 3. SEKME: GRAMMAR PILL (DİL BİLGİSİ + MİNİ PRATİK)
   with tab_grammar:
     grammar = current_module.get("grammar_pill", {})
     st.header(f"💡 {grammar.get('title', 'Dil Bilgisi Kuralı')}")
@@ -156,215 +660,55 @@ else:
     for rule in grammar.get("rules", []):
       st.markdown(f"* **{rule}**")
 
-    # --- İNTERAKTİF DİL BİLGİSİ ATÖLYESİ (MİNİ PRATİK) ---
+    # İnteraktif Mini Pratik
     st.markdown("---")
     st.markdown(
-        '<div class="grammar-workshop"><h3>🛠️ İnteraktif Dil Bilgisi Atölyesi'
-        ' (Anında Pratik)</h3><p>Öğrendiğiniz kuralı hemen pekiştirmek için'
-        ' aşağıdaki hızlı meydan okumayı tamamlayın:</p></div>',
+        '<div class="grammar-workshop"><h3>🛠️ İnteraktif Dil Bilgisi'
+        ' Atölyesi</h3><p>Bu modülün kuralını pekiştirmek için hızlı testi'
+        ' tamamlayın:</p></div>',
         unsafe_allow_html=True,
     )
 
-    # Modüle özel dinamik mini pratik senaryoları
     if mod_id == 1:
-      st.markdown("**Soru:** Doğru selamlaşma kalıbını seçin:")
       ans1 = st.radio(
           "Sabah vakti birine ne denir?",
           ["Good evening", "Good morning", "Goodbye"],
-          key="g_mod1",
+          key="g_m1",
       )
-      if st.button("Kontrol Et", key="btn_g1"):
+      if st.button("Kontrol Et", key="bm1"):
         if ans1 == "Good morning":
           st.success("Tebrikler! Doğru cevap 🎉")
         else:
           st.error("Yanlış. Sabahları 'Good morning' denir.")
-
     elif mod_id == 2:
-      st.markdown(
-          "**Soru:** 'She' öznesiyle hangi 'To Be' (am/is/are) formu kullanılır?"
-      )
       ans2 = st.radio(
-          "Boşluğu doldurun: She ___ a doctor.", ["am", "is", "are"], key="g_mod2"
+          "Boşluğu doldurun: She ___ a doctor.", ["am", "is", "are"], key="g_m2"
       )
-      if st.button("Kontrol Et", key="btn_g2"):
+      if st.button("Kontrol Et", key="bm2"):
         if ans2 == "is":
           st.success("Harika! 'She is' doğru kullanımdır 🎉")
         else:
-          st.error(
-              "Yanlış. Tekil öznelerde (He/She/It) 'is' fiili kullanılır."
-          )
-
-    elif mod_id == 3:
-      st.markdown(
-          "**Soru:** Uzaktaki birden fazla nesneyi işaret etmek için hangi zamir"
-          " kullanılır?"
-      )
-      ans3 = st.radio(
-          "Seçiminizi yapın:", ["This", "These", "Those"], key="g_mod3"
-      )
-      if st.button("Kontrol Et", key="btn_g3"):
-        if ans3 == "Those":
-          st.success("Mükemmel! 'Those' uzak çoğul demektir 🎉")
-        else:
-          st.error(
-              "Yanlış. Uzaktaki çoğullar için 'Those' kelimesi kullanılır."
-          )
-
-    elif mod_id == 4:
-      st.markdown(
-          "**Soru:** 'He' zamiri için sahip olma (have/has got) yapısı nasıldır?"
-      )
-      ans4 = st.radio(
-          "Seçiminizi yapın:",
-          ["He have got a car", "He has got a car", "He is got a car"],
-          key="g_mod4",
-      )
-      if st.button("Kontrol Et", key="btn_g4"):
-        if ans4 == "He has got a car":
-          st.success("Doğru! 3. tekil şahıslarda 'has got' kullanılır 🎉")
-        else:
-          st.error("Yanlış. Doğru yapı 'He has got a car' şeklindedir.")
-
-    elif mod_id == 5:
-      st.markdown(
-          "**Soru:** Kesin saatlerin önüne hangi zaman edatı (preposition)"
-          " getirilir?"
-      )
-      ans5 = st.radio(
-          "Örnek: ___ 5 o'clock", ["in", "on", "at"], key="g_mod5"
-      )
-      if st.button("Kontrol Et", key="btn_g5"):
-        if ans5 == "at":
-          st.success("Harika! Kesin saatler için 'at' kullanılır 🎉")
-        else:
-          st.error("Yanlış. Saatlerin önüne 'at' gelmelidir (at 5 o'clock).")
-
-    elif mod_id == 6:
-      st.markdown(
-          "**Soru:** Kedi masanın altındaysa İngilizce nasıl ifade edilir?"
-      )
-      ans6 = st.radio(
-          "Seçiminizi yapın:",
-          [
-              "The cat is on the table",
-              "The cat is under the table",
-              "The cat is in the table",
-          ],
-          key="g_mod6",
-      )
-      if st.button("Kontrol Et", key="btn_g6"):
-        if ans6 == "The cat is under the table":
-          st.success("Tebrikler! 'Under' altında anlamına gelir 🎉")
-        else:
-          st.error("Yanlış. 'Under' kelimesi 'altında' demektir.")
-
-    elif mod_id == 7:
-      st.markdown(
-          "**Soru:** Geniş zamanda (Present Simple) 'He' öznesinde fiil nasıl"
-          " çekimlenir?"
-      )
-      ans7 = st.radio(
-          "Boşluğu doldurun: He ___ (work) in an office.",
-          ["work", "works", "working"],
-          key="g_mod7",
-      )
-      if st.button("Kontrol Et", key="btn_g7"):
-        if ans7 == "works":
-          st.success("Mükemmel! He/She/It ile fiil '-s' takısı alır 🎉")
-        else:
-          st.error("Yanlış. Geniş zamanda tekil şahıslarda fiile '-s' eklenir.")
-
-    elif mod_id == 8:
-      st.markdown(
-          "**Soru:** Yetenek bildiren 'can' fiilinden sonra gelen asıl fiil nasıl"
-          " yazılır?"
-      )
-      ans8 = st.radio(
-          "Seçiminizi yapın:",
-          ["Yalın (ek almamış hali)", "-ing takısı alarak", "Geçmiş zaman"],
-          key="g_mod8",
-      )
-      if st.button("Kontrol Et", key="btn_g8"):
-        if ans8 == "Yalın (ek almamış hali)":
-          st.success("Doğru! 'Can' modal fiilinden sonra fiil yalın gelir 🎉")
-        else:
-          st.error("Yanlış. 'Can' sonrasında fiiller ek almaz (yalın kalır).")
-
-    elif mod_id == 9:
-      st.markdown(
-          "**Soru:** Şu an yapılan bir eylemi anlatan (Present Continuous)"
-          " cümlede fiilin sonuna ne eklenir?"
-      )
-      ans9 = st.radio(
-          "Seçiminizi yapın:", ["-s", "-ed", "-ing"], key="g_mod9"
-      )
-      if st.button("Kontrol Et", key="btn_g9"):
-        if ans9 == "-ing":
-          st.success("Harika! Continuous yapılarda '-ing' eki şarttır 🎉")
-        else:
-          st.error("Yanlış. Şu anki zaman için fiile '-ing' eklenir.")
-
-    elif mod_id == 10:
-      st.markdown(
-          "**Soru:** Bir ürünün tekil fiyatını sormak için hangi kalıp"
-          " kullanılır?"
-      )
-      ans10 = st.radio(
-          "Seçiminizi yapın:",
-          ["How much are these?", "How much is this?", "How many is this?"],
-          key="g_mod10",
-      )
-      if st.button("Kontrol Et", key="btn_g10"):
-        if ans10 == "How much is this?":
-          st.success("Tebrikler! Tekil ürünler için 'How much is this?' denir 🎉")
-        else:
-          st.error(
-              "Yanlış. Tekil ürünlerde 'is this', çoğullarda 'are these' kullanılır."
-          )
-
-    elif mod_id == 11:
-      st.markdown(
-          "**Soru:** Geçmiş zamandaki durum bildiren 'We' öznesi için hangi"
-          " geçmiş yardımcı fiil kullanılır?"
-      )
-      ans11 = st.radio(
-          "Boşluğu doldurun: We ___ at home yesterday.",
-          ["was", "were", "are"],
-          key="g_mod11",
-      )
-      if st.button("Kontrol Et", key="btn_g11"):
-        if ans11 == "were":
-          st.success("Mükemmel! You/We/They için 'were' kullanılır 🎉")
-        else:
-          st.error(
-              "Yanlış. 'We' çoğul bir öznedir, geçmiş hali 'were' olmalıdır."
-          )
-
+          st.error("Yanlış. Tekil öznelerde (She) 'is' kullanılır.")
     else:
-      st.markdown(
-          "**Soru:** Bu modüldeki genel soru kelimelerinden (Wh-) yer soran"
-          " kelime hangisidir?"
+      ans_gen = st.radio(
+          "Bu modülün ana kuralını doğru uyguladınız mı?",
+          ["Evet, kuralları anladım ve pratik yaptım", "Tekrar gözden geçireceğim"],
+          key=f"g_mg_{mod_id}",
       )
-      ans12 = st.radio(
-          "Seçiminizi yapın:", ["What", "Where", "When"], key="g_mod12"
-      )
-      if st.button("Kontrol Et", key="btn_g12"):
-        if ans12 == "Where":
-          st.success("Doğru! 'Where' nerede/yer sorar 🎉")
-        else:
-          st.error("Yanlış. Yer sormak için 'Where' kullanılır.")
+      if st.button("Kontrol Et", key=f"bm_g_{mod_id}"):
+        st.success(
+            "Harika! Kelime ve dil bilgisi pratikleriyle bu modülü başarıyla"
+            " ilerletiyorsunuz 🎉"
+        )
 
-  # 4. SEKME: SINAV SİMÜLASYONU (4 TEMEL BECERİ: OKUMA, DİNLEME, KONUŞMA, YAZMA)
+  # 4. SEKME: SINAV SİMÜLASYONU (4 TEMEL BECERİ)
   with tab_exam:
     st.header("📝 4 Temel Dil Becerisi Sınav Simülasyonu")
     st.markdown(
-        "KET ve telc sınav formatına birebir uygun olarak hazırlanmış pratik"
-        " alanları:"
+        "KET ve telc sınav formatına birebir uygun pratik alanları:"
     )
 
     exam = current_module.get("exam_simulation", {})
-
-    # Alt Sekmeler ile 4 Beceriye Bölme
     skill_tab1, skill_tab2, skill_tab3, skill_tab4 = st.tabs([
         "📖 Okuma (Reading)",
         "🎧 Dinleme (Listening)",
@@ -372,7 +716,6 @@ else:
         "✍️ Yazma (Writing)",
     ])
 
-    # --- 1. OKUMA ---
     with skill_tab1:
       st.markdown(
           '<div class="skill-header">📖 Okuma Becerisi ve Anlama</div>',
@@ -385,19 +728,16 @@ else:
       st.markdown("### Sorular")
       questions = exam.get("questions", [])
       user_answers = {}
-
       for q_idx, q in enumerate(questions):
         st.markdown(f"**Soru {q_idx + 1}:** {q['q']}")
         user_choice = st.radio(
             "Seçiminizi yapın:",
             q["options"],
-            key=f"q_{current_module['module_id']}_{q_idx}",
+            key=f"q_{mod_id}_{q_idx}",
         )
         user_answers[q_idx] = (user_choice, q["answer"])
 
-      if st.button(
-          "Cevapları Kontrol Et", key=f"check_{current_module['module_id']}"
-      ):
+      if st.button("Cevapları Kontrol Et", key=f"check_ex_{mod_id}"):
         for q_idx, (chosen, correct) in user_answers.items():
           if chosen == correct:
             st.success(f"Soru {q_idx + 1}: Doğru! 🎉")
@@ -407,25 +747,17 @@ else:
                 " olmalıydı."
             )
 
-    # --- 2. DİNLEME ---
     with skill_tab2:
       st.markdown(
           '<div class="skill-header">🎧 Dinleme (Listening) Simülasyonu</div>',
           unsafe_allow_html=True,
       )
-      st.markdown(
-          "Aşağıdaki butona tıklayarak veya metni tarayıcınıza okutarak"
-          " dinleme simülasyonunu gerçekleştirebilir ve sesli anlama pratiği"
-          " yapabilirsiniz."
-      )
-
       listening_text = exam.get(
           "reading", "Audio script unavailable for this module."
       )
       st.text_area(
           "Dinleme Metni (Audio Script):", value=listening_text, height=100
       )
-
       tts_html = f"""
             <div style="margin-top: 10px;">
                 <button onclick="speakText()" style="background-color: #0066cc; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold;">🔊 Metni Sesli Dinle (Play Audio)</button>
@@ -441,37 +773,27 @@ else:
             """
       st.components.v1.html(tts_html, height=70)
 
-    # --- 3. KONUŞMA ---
     with skill_tab3:
       st.markdown(
           '<div class="skill-header">🗣️ Konuşma (Speaking) Pratiği</div>',
           unsafe_allow_html=True,
       )
-      st.markdown(
-          "Bu bölümde hedef, modül konusuna uygun olarak sesli ifade becerinizi"
-          " geliştirmektir."
-      )
-
       st.warning(
-          "📢 **Konuşma Görevi:** Bu modüldeki hedef kelimeleri ve dil bilgisi"
-          " kalıplarını kullanarak yüksek sesle kendi kendine en az 3 cümle"
-          " kurun."
+          "📢 **Konuşma Görevi:** Yukarıdaki kelime hazinesinden seçtiğiniz"
+          " kelimeleri kullanarak yüksek sesle en az 3 cümle kurun."
       )
-
       user_spoken_text = st.text_input(
-          "Konuşma provası yaparken söyleyeceğiniz cümleleri buraya yazarak"
-          " önce taslak oluşturun:"
+          "Konuşma provası taslağınızı buraya yazın:", key=f"spk_{mod_id}"
       )
-      if st.button("Konuşma Taslağını Kaydet"):
+      if st.button("Konuşma Taslağını Kaydet", key=f"btn_spk_{mod_id}"):
         if user_spoken_text.strip():
           st.success(
-              "Harika! Konuşma taslağınız kaydedildi. Şimdi bunu yüksek"
-              " sesle okuyun."
+              "Harika! Konuşma taslağınız kaydedildi. Şimdi yüksek sesle"
+              " okuyun."
           )
         else:
-          st.warning("Lütfen pratik yapmak için birkaç kelime veya cümle girin.")
+          st.warning("Lütfen pratik için birkaç cümle yazın.")
 
-    # --- 4. YAZMA ---
     with skill_tab4:
       st.markdown(
           '<div class="skill-header">✍️ Yazma (Writing) Görevi</div>',
@@ -481,16 +803,12 @@ else:
           "writing_task", "Bu modül için özel yazma görevi bulunmuyor."
       )
       st.info(f"📌 **Yazma Görevi Yönergesi:** {writing_task_desc}")
-
       user_writing = st.text_area(
           "Cevabınızı İngilizce olarak buraya yazın:",
-          key=f"writing_{current_module['module_id']}",
+          key=f"writing_{mod_id}",
           height=150,
       )
-
-      if st.button(
-          "Yazı Görevini Gönder", key=f"submit_w_{current_module['module_id']}"
-      ):
+      if st.button("Yazı Görevini Gönder", key=f"submit_w_{mod_id}"):
         if user_writing.strip():
           word_count = len(user_writing.split())
           st.success(
@@ -499,6 +817,5 @@ else:
           )
         else:
           st.warning(
-              "Lütfen boş bırakmayın, yönergeye uygun şekilde en az bir cümle"
-              " yazın."
+              "Lütfen boş bırakmayın, yönergeye uygun şekilde yazı yazın."
           )
