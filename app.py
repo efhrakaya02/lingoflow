@@ -2,8 +2,8 @@ from groq import Groq
 import streamlit as st
 
 st.set_page_config(
-    page_title="LingoFlow Academy - Kişisel Dil Stüdyosu",
-    page_icon="🎓",
+    page_title="LingoFlow Story Academy - Kişisel Hikaye Stüdyosu",
+    page_icon="📖",
     layout="wide",
 )
 
@@ -27,6 +27,10 @@ if "target_lang" not in st.session_state:
   st.session_state["target_lang"] = "İngilizce (English)"
 if "current_level" not in st.session_state:
   st.session_state["current_level"] = "A1"
+if "user_goal" not in st.session_state:
+  st.session_state["user_goal"] = ""
+if "user_dream" not in st.session_state:
+  st.session_state["user_dream"] = ""
 if "modules" not in st.session_state:
   st.session_state["modules"] = []
 if "current_module_idx" not in st.session_state:
@@ -43,10 +47,10 @@ if "quiz_question" not in st.session_state:
 
 # --- AŞAMA 1: TANIŞMA VE DİL SEÇİMİ ---
 if st.session_state["stage"] == "welcome":
-  st.title("🎓 LingoFlow Academy'ye Hoş Geldiniz!")
+  st.title("📖 LingoFlow Story Academy'ye Hoş Geldiniz!")
   st.markdown(
-      "Hata yapmaktan korkmayacağınız, tamamen size özel planlanmış, eğlenceli"
-      " ve interaktif dil öğrenme stüdyosu."
+      "Dili kurallarla değil, **kendi hikayeniz ve hedefleriniz** etrafında"
+      " şekillenen sürükleyici bir macera ile öğrenin."
   )
 
   col1, col2 = st.columns(2)
@@ -58,7 +62,7 @@ if st.session_state["stage"] == "welcome":
         ["İngilizce (English)", "Almanca (Deutsch)", "İspanyolca (Español)"],
     )
 
-  if st.button("🚀 Yolculuğa Başla ve Seviyeni Test Et", type="primary"):
+  if st.button("🚀 Yolculuğa Başla", type="primary"):
     if name_input.strip():
       st.session_state["user_name"] = name_input
       st.session_state["target_lang"] = lang_input
@@ -73,8 +77,8 @@ elif st.session_state["stage"] == "placement":
       f"🎯 {st.session_state['user_name']}, Seviye Tespit Sınavına Hoş Geldin!"
   )
   st.markdown(
-      "Sana en uygun kişisel çalışma planını oluşturabilmemiz için aşağıdaki 3"
-      " kısa soruyu yanıtla."
+      "Sana en uygun hikaye tabanlı çalışma planını oluşturabilmemiz için"
+      " aşağıdaki 3 kısa soruyu yanıtla."
   )
 
   with st.form("placement_form"):
@@ -95,7 +99,7 @@ elif st.session_state["stage"] == "placement":
         ],
     )
     q3 = st.radio(
-        "3. İngilizce iletişim kurarken kendinizi nasıl hissediyorsunuz?",
+        "3. İletişim kurarken kendinizi nasıl hissediyorsunuz?",
         [
             "A) Çok çekiniyorum, sadece temel kelimeler biliyorum.",
             "B) Basit konularda konuşabiliyorum ama detaylarda zorlanıyorum.",
@@ -103,7 +107,7 @@ elif st.session_state["stage"] == "placement":
         ],
     )
 
-    submitted = st.form_submit_button("Sınavı Tamamla ve Planımı Oluştur")
+    submitted = st.form_submit_button("Sınavı Tamamla ve Hedefini Belirle")
     if submitted:
       if "A)" in q1 and "A)" in q2:
         detected_level = "A1"
@@ -113,62 +117,110 @@ elif st.session_state["stage"] == "placement":
         detected_level = "B2"
 
       st.session_state["current_level"] = detected_level
+      st.session_state["stage"] = "goal_setup"
+      st.rerun()
 
-      if detected_level == "A1":
+# --- AŞAMA 3: HİKAYE VE HEDEF BELİRLEME (STORY SETUP) ---
+elif st.session_state["stage"] == "goal_setup":
+  st.title(f"🌟 {st.session_state['user_name']}, Şimdi Hikayeni Yazalım!")
+  st.markdown(
+      f"Tespit Edilen Seviye: **{st.session_state['current_level']}** | Bu"
+      " dili öğrenmekteki asıl amacın ne ve başardığında ne yapacaksın?"
+  )
+
+  with st.form("story_goal_form"):
+    goal_choice = st.selectbox(
+        "Bu dili öğrenme amacın nedir?",
+        [
+            "🌍 Seyahat etmek ve dünyayı keşfetmek",
+            "💼 Kariyerimde yükselmek ve uluslararası projelerde yer almak",
+            "🎬 Yabancı dizileri, filmleri ve kitapları orijinal dilinde anlamak",
+            "✈️ Yurtdışına yerleşmek / Yaşam kurmak",
+            "💡 Kişisel gelişim ve yeni bir hobi",
+        ],
+    )
+    dream_input = st.text_area(
+        "Hedefine ulaştığında ilk yapmak istediğin şey nedir?",
+        placeholder=(
+            "Örn: New York sokaklarında kimseye ihtiyaç duymadan kahve"
+            " sipariş etmek veya uluslararası bir toplantıda sunum yapmak..."
+        ),
+    )
+
+    goal_submitted = st.form_submit_button(
+        "Kişiselleştirilmiş Hikaye Planımı Oluştur 🚀"
+    )
+    if goal_submitted:
+      st.session_state["user_goal"] = goal_choice
+      st.session_state["user_dream"] = (
+          dream_input if dream_input.strip() else "Kendi hikayesini yazmak"
+      )
+
+      # Seviye ve hedefe göre dinamik modüller oluşturalım
+      lvl = st.session_state["current_level"]
+      if lvl == "A1":
         st.session_state["modules"] = [
             {
-                "title": "Modül 1: Tanışma ve Selamlaşma",
+                "title": (
+                    "Bölüm 1: Yolculuğun İlk Adımı (Tanışma ve Temel İletişim)"
+                ),
                 "status": "Açık",
                 "words": 15,
-                "skill": "Dinleme & Okuma",
+                "skill": "Dinleme & Özgüven",
             },
             {
-                "title": "Modül 2: Günlük Rutinler ve Aile",
+                "title": (
+                    "Bölüm 2: Hikayenin Başlangıcı (Günlük Yaşam ve Rotalar)"
+                ),
                 "status": "Kilitli",
                 "words": 20,
-                "skill": "Yazma & Konuşma Cesareti",
+                "skill": "Yön ve İhtiyaçlar",
             },
             {
-                "title": "Modül 3: Alışveriş ve Restoranda Sipariş",
+                "title": (
+                    "Bölüm 3: İlk Büyük Başarı (Hedefe Doğru İlk Pratik Diyalog)"
+                ),
                 "status": "Kilitli",
                 "words": 25,
-                "skill": "Pratik Diyalog",
+                "skill": "Temel Akıcılık",
             },
         ]
       else:
         st.session_state["modules"] = [
             {
-                "title": "Modül 1: Profesyonel İletişim ve Toplantılar",
+                "title": (
+                    "Bölüm 1: Profesyonel Zirve ve Stratejik İletişim"
+                ),
                 "status": "Açık",
                 "words": 20,
-                "skill": "İleri Düzey Yazma",
+                "skill": "İleri Düzey Sentez",
             },
             {
-                "title": "Modül 2: Karmaşık Olaylar ve Hikaye Anlatımı",
+                "title": "Bölüm 2: Derinlemesine Senaryolar ve Müzakere",
                 "status": "Kilitli",
                 "words": 25,
-                "skill": "Akıcı Konuşma",
+                "skill": "Akıcı Savunma",
             },
             {
-                "title": "Modül 3: Soyut Fikirler ve Münazara",
+                "title": "Bölüm 3: Hikayenin Zirvesi ve Küresel Yetkinlik",
                 "status": "Kilitli",
                 "words": 30,
-                "skill": "Kapsamlı Sentez",
+                "skill": "Kusursuz İfade",
             },
         ]
 
       st.session_state["stage"] = "dashboard"
       st.rerun()
 
-# --- AŞAMA 3: KİŞİSEL KURS PLANI & MODÜL PANELI ---
+# --- AŞAMA 4: KİŞİSEL KURS PLANI & HİKAYE PANELI ---
 elif st.session_state["stage"] == "dashboard":
-  st.title(f"🗺️ {st.session_state['user_name']} - Kişisel Kurs Planın")
+  st.title(f"🗺️ {st.session_state['user_name']} - Hikaye Yolculuğun")
   st.success(
-      f"Tespit Edilen Seviye: **{st.session_state['current_level']}** | Hedef"
-      f" Dil: **{st.session_state['target_lang']}**"
+      f"🎯 **Hedef:** {st.session_state['user_goal']} | 🌟 **Hayalin:**"
+      f" *{st.session_state['user_dream']}*"
   )
 
-  st.markdown("### 📚 Müfredat Modülleriniz")
+  st.markdown("### 📚 Hikaye Bölümleriniz")
   col_m1, col_m2, col_m3 = st.columns(3)
 
   for idx, mod in enumerate(st.session_state["modules"]):
@@ -176,9 +228,12 @@ elif st.session_state["stage"] == "dashboard":
       st.markdown(f"**{mod['title']}**")
       st.caption(f"Odak: {mod['skill']} | Kelime: {mod['words']} adet")
 
-      # Açık veya Tamamlanmış modüllere tekrar girebilme izni
       if mod["status"] in ["Açık", "Tamamlandı"]:
-        btn_label = "Derse Başla 🚀" if mod["status"] == "Açık" else "Tekrar Et 🔄"
+        btn_label = (
+            "Hikayeye Devam Et 🚀"
+            if mod["status"] == "Açık"
+            else "Bölümü Tekrar Et 🔄"
+        )
         if st.button(btn_label, key=f"mod_{idx}"):
           st.session_state["current_module_idx"] = idx
           st.session_state["quiz_active"] = False
@@ -189,29 +244,49 @@ elif st.session_state["stage"] == "dashboard":
 
   st.markdown("---")
   st.info(
-      "💡 **İpucu:** Hiç çekinmeden yabancı dilde cümleler kurun. Hatalarınız"
-      " anında nazikçe düzeltilerek öğrenmeniz pekiştirilecektir!"
+      "💡 **Hikaye Notu:** Seviyenize uygun olarak bu bölümde anadil desteği"
+      " optimize edilmiştir. Çekinmeden hedef dilde cümleler kurun!"
   )
 
-# --- AŞAMA 4: ETKİLEŞİMLİ DERS VE PRATİK (LEARNING STAGE) ---
+# --- AŞAMA 5: ETKİLEŞİMLİ HİKAYE VE DERS (LEARNING STAGE) ---
 elif st.session_state["stage"] == "learning":
   mod_idx = st.session_state["current_module_idx"]
   active_mod = st.session_state["modules"][mod_idx]
 
   st.title(f"📖 {active_mod['title']}")
   st.caption(
-      f"Seviye: {st.session_state['current_level']} | Hedef Kazanım:"
-      f" {active_mod['skill']}"
+      f"Seviye: {st.session_state['current_level']} | Hedef Hikaye Amacı:"
+      f" {st.session_state['user_goal']}"
   )
+
+  # Seviyeye göre anadil (Türkçe) yardım oranını belirleyen talimat
+  level_instruction = ""
+  if st.session_state["current_level"] == "A1":
+    level_instruction = (
+        "Since the user is at A1 level, provide supportive explanations and"
+        " tips in Turkish, while keeping the core sentences in the target"
+        " language."
+    )
+  elif st.session_state["current_level"] == "A2":
+    level_instruction = (
+        "Since the user is at A2 level, use a balance of target language and"
+        " light Turkish guidance for complex rules."
+    )
+  else:
+    level_instruction = (
+        "Since the user is at B1/B2 level, communicate almost entirely in the"
+        " target language with minimal Turkish guidance."
+    )
 
   if "lesson_chat" not in st.session_state:
     intro_prompt = (
-        f"You are a friendly, encouraging language tutor for"
-        f" {st.session_state['target_lang']} at level"
-        f" {st.session_state['current_level']}. We are starting module:"
-        f" {active_mod['title']}. Give a short, fun, interactive introduction,"
-        f" teach 3 core words with examples, and encourage the user to speak"
-        " without fear by asking a simple question in the target language."
+        f"You are an inspiring story-driven language coach for"
+        f" {st.session_state['target_lang']}. The user's ultimate dream is:"
+        f" '{st.session_state['user_dream']}'. We are in module:"
+        f" {active_mod['title']}. {level_instruction} Create a short, engaging"
+        " story narrative that connects this lesson to their dream, teach 3"
+        " practical words, and ask an encouraging question in the target"
+        " language to get them speaking without fear."
     )
     try:
       res = client.chat.completions.create(
@@ -222,8 +297,8 @@ elif st.session_state["stage"] == "learning":
       init_text = res.choices[0].message.content
     except Exception:
       init_text = (
-          "Merhaba! Bu derste yeni kelimeler öğreneceğiz ve hiç çekinmeden"
-          " pratik yapacağız. Hazırsan ilk sorumla başlayalım!"
+          "Merhaba! Hikayemizin bu bölümünde hedefine bir adım daha"
+          " yaklaşıyoruz. Hazırsan ilk pratik sorumuzla başlayalım!"
       )
 
     st.session_state["lesson_chat"] = [{
@@ -236,7 +311,7 @@ elif st.session_state["stage"] == "learning":
       st.markdown(msg["content"])
 
   # Sohbet Giriş Barı
-  if user_reply := st.chat_input("Cümlenizi yazın, çekinmeden pratik yapın..."):
+  if user_reply := st.chat_input("Hikayeye katkıda bulun, cümle kur..."):
     st.session_state["lesson_chat"].append(
         {"role": "user", "content": user_reply}
     )
@@ -244,11 +319,11 @@ elif st.session_state["stage"] == "learning":
       st.markdown(user_reply)
 
     tutor_prompt = (
-        f"You are an encouraging language tutor for"
-        f" {st.session_state['target_lang']}. Evaluate the user's input:"
-        " '{user_reply}'. Correct any mistakes gently with a friendly tip,"
-        " praise their effort to boost confidence, and ask a follow-up question"
-        " to keep the conversation going."
+        f"You are an encouraging story coach for"
+        f" {st.session_state['target_lang']}. {level_instruction} Evaluate the"
+        f" user input: '{user_reply}'. Correct mistakes gently, connect the"
+        " response back to their dream ('{st.session_state['user_dream']}'),"
+        " praise their effort, and ask a follow-up question."
     )
     try:
       chat_res = client.chat.completions.create(
@@ -269,19 +344,18 @@ elif st.session_state["stage"] == "learning":
     with st.chat_message("assistant"):
       st.markdown(tutor_reply)
 
-  # --- SOHBET BARININ ALTINDAKİ KONTROL VE TEST ALANI ---
+  # --- BÖLÜM KONTROL VE TEKRAR TESTİ (SOHBETİN ALTINDA) ---
   st.markdown("---")
-  st.markdown("### 🎯 Bölüm Kontrol ve Tekrar Testi")
+  st.markdown("### 🎯 Bölüm Kontrol ve Hikaye Tekrar Testi")
 
   if not st.session_state["quiz_active"]:
     if st.button("📝 Bölüm Sonu Tekrar Testini Başlat", type="secondary"):
-      # Yapay zekadan kısa bir tekrar testi sorusu isteyelim
       q_prompt = (
-          f"Create 1 short multiple-choice review question in"
+          f"Create 1 short multiple-choice story-based review question in"
           f" {st.session_state['target_lang']} for level"
-          f" {st.session_state['current_level']} based on module"
-          f" {active_mod['title']}. Give 4 options (A, B, C, D) and state the"
-          " correct answer clearly at the end as 'Doğru Cevap: X'."
+          f" {st.session_state['current_level']} connecting to"
+          f" '{st.session_state['user_goal']}'. Give 4 options (A, B, C, D) and"
+          " state the correct answer clearly at the end as 'Doğru Cevap: X'."
       )
       try:
         q_res = client.chat.completions.create(
@@ -301,9 +375,8 @@ elif st.session_state["stage"] == "learning":
         "Cevabınız (Örn: A, B, C veya D):", key="quiz_answer_input"
     )
 
-    if st.button("✅ Testi Kontrol Et ve Modülü Tamamla", type="primary"):
+    if st.button("✅ Testi Kontrol Et ve Bölümü Tamamla", type="primary"):
       if user_quiz_ans.strip():
-        # İstatistikleri güncelle ve modülü tamamla
         if active_mod["status"] != "Tamamlandı":
           st.session_state["total_words"] += active_mod["words"]
           st.session_state["achievements"].append(active_mod["title"])
@@ -311,15 +384,14 @@ elif st.session_state["stage"] == "learning":
 
         st.session_state["quiz_active"] = False
 
-        # Sonraki modülü aç veya sertifikaya git
         if mod_idx + 1 < len(st.session_state["modules"]):
           if st.session_state["modules"][mod_idx + 1]["status"] == "Kilitli":
             st.session_state["modules"][mod_idx + 1]["status"] = "Açık"
           del st.session_state["lesson_chat"]
           st.session_state["stage"] = "dashboard"
           st.success(
-              "Tebrikler! Tekrar testini başarıyla geçtiniz ve modülü"
-              " tamamladınız."
+              "Tebrikler! Hikayenin bu bölümünü başarıyla tamamladın ve sonraki"
+              " bölüme açıldı."
           )
           st.rerun()
         else:
@@ -329,37 +401,38 @@ elif st.session_state["stage"] == "learning":
       else:
         st.warning("Lütfen bir cevap yazın.")
 
-  if st.button("🔙 Panele Geri Dön"):
+  if st.button("🔙 Hikaye Paneline Geri Dön"):
     st.session_state["quiz_active"] = False
     if "lesson_chat" in st.session_state:
       del st.session_state["lesson_chat"]
     st.session_state["stage"] = "dashboard"
     st.rerun()
 
-# --- AŞAMA 5: SERTİFİKA VE GELİŞİM TABLOSU ---
+# --- AŞAMA 6: SERTİFİKA VE GELİŞİM TABLOSU ---
 elif st.session_state["stage"] == "certificate":
-  st.title("🏆 Tebrikler, Harika Bir Başarıya İmza Attın!")
+  st.title("🏆 Harika Bir Hikayeyi Zirvede Tamamladın!")
   st.balloons()
 
   st.markdown(
       f"""
     <div style="border: 4px solid #4CAF50; padding: 30px; border-radius: 15px; text-align: center; background-color: #f9f9f9;">
-        <h2>🎓 BAŞARI VE YETERLİLİK SERTİFİKASI 🎓</h2>
+        <h2>🎓 HİKAYE BAŞARI VE YETERLİLİK SERTİFİKASI 🎓</h2>
         <p>Bu sertifika,</p>
         <h3><b>{st.session_state['user_name']}</b></h3>
         <p>adlı öğrencimizin <b>{st.session_state['target_lang']}</b> dilinde başarıyla tamamladığı</p>
-        <h4><b>{st.session_state['current_level']} Seviyesi Eğitim Programını</b></h4>
-        <p>başarıyla bitirdiğini ve gerekli tüm dil becerilerini kazandığını belgelemektedir.</p>
+        <h4><b>{st.session_state['current_level']} Seviyesi Hikaye Programını</b></h4>
+        <p>başarıyla bitirdiğini, <i>"{st.session_state['user_dream']}"</i> hayaline bir adım daha yaklaştığını belgelemektedir.</p>
         <hr style="width: 50%; margin: 20px auto;">
+        <p><b>Temel Hedef:</b> {st.session_state['user_goal']}</p>
         <p><b>Toplam Öğrenilen Kelime:</b> {st.session_state['total_words']} adet</p>
-        <p><b>Elde Edilen Kazanımlar:</b> {', '.join(st.session_state['achievements'])}</p>
+        <p><b>Tamamlanan Bölümler:</b> {', '.join(st.session_state['achievements'])}</p>
     </div>
     """,
       unsafe_allow_html=True,
   )
 
   st.markdown("<br>", unsafe_allow_html=True)
-  if st.button("🌟 Yeni Seviyeye (Sonraki Aşama) Geçiş Yap", type="primary"):
+  if st.button("🌟 Yeni Seviye ve Yeni Hikayeye Geçiş Yap", type="primary"):
     if st.session_state["current_level"] == "A1":
       st.session_state["current_level"] = "A2"
     elif st.session_state["current_level"] == "A2":
@@ -369,16 +442,16 @@ elif st.session_state["stage"] == "certificate":
 
     st.session_state["modules"] = [
         {
-            "title": f"Modül 1: {st.session_state['current_level']} İleri Pratik",
+            "title": f"Bölüm 1: {st.session_state['current_level']} Hikaye Genişlemesi",
             "status": "Açık",
             "words": 30,
-            "skill": "Akıcı Konuşma",
+            "skill": "İleri Akıcılık",
         },
         {
-            "title": f"Modül 2: {st.session_state['current_level']} Uzmanlık Alanları",
+            "title": f"Bölüm 2: {st.session_state['current_level']} Karmaşık Senaryolar",
             "status": "Kilitli",
             "words": 35,
-            "skill": "Karmaşık Metinler",
+            "skill": "Doğal Konuşma",
         },
     ]
     st.session_state["stage"] = "dashboard"
