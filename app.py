@@ -2,7 +2,7 @@ from groq import Groq
 import streamlit as st
 
 st.set_page_config(
-    page_title="LingoFlow Pro - Kapsamlı Dil Akademisi",
+    page_title="LingoFlow Pro - Gelişmiş Dil Akademisi",
     page_icon="🎓",
     layout="wide",
 )
@@ -25,8 +25,14 @@ if "user_name" not in st.session_state:
   st.session_state["user_name"] = ""
 if "target_lang" not in st.session_state:
   st.session_state["target_lang"] = "İngilizce (English)"
+if "placement_step" not in st.session_state:
+  st.session_state["placement_step"] = 1
+if "placement_answers" not in st.session_state:
+  st.session_state["placement_answers"] = {}
 if "current_level" not in st.session_state:
   st.session_state["current_level"] = "A1"
+if "personality_profile" not in st.session_state:
+  st.session_state["personality_profile"] = ""
 if "user_goal" not in st.session_state:
   st.session_state["user_goal"] = ""
 if "user_dream" not in st.session_state:
@@ -36,7 +42,7 @@ if "modules" not in st.session_state:
 if "current_module_idx" not in st.session_state:
   st.session_state["current_module_idx"] = 0
 if "lesson_step" not in st.session_state:
-  st.session_state["lesson_step"] = 1  # 1: Okuma/Hikaye, 2: Kelime&Kalıp, 3: Test, 4: Yazma
+  st.session_state["lesson_step"] = 1
 if "total_words" not in st.session_state:
   st.session_state["total_words"] = 0
 if "achievements" not in st.session_state:
@@ -47,10 +53,11 @@ if "current_report" not in st.session_state:
 
 # --- AŞAMA 1: TANIŞMA VE DİL SEÇİMİ ---
 if st.session_state["stage"] == "welcome":
-  st.title("🎓 LingoFlow Pro - Profesyonel Dil Akademisi")
+  st.title("🎓 LingoFlow Pro - Kişiselleştirilmiş Dil Akademisi")
   st.markdown(
-      "Yüzeysel değil; **her biri 5-10 dakika süren yoğun, kişiselleştirilmiş ve"
-      " karneli** gerçek bir eğitim planıyla dil öğrenin."
+      "Adım adım ilerleyen 10 soruluk kapsamlı analiz sınavımızla; hem"
+      " **dil seviyenizi** hem de **kişilik ve öğrenme stilinizi** belirliyoruz."
+      " Size özel profesyonel eğitim planınızı oluşturalım."
   )
 
   col1, col2 = st.columns(2)
@@ -62,67 +69,226 @@ if st.session_state["stage"] == "welcome":
         ["İngilizce (English)", "Almanca (Deutsch)", "İspanyolca (Español)"],
     )
 
-  if st.button("🚀 Akademik Yolculuğa Başla", type="primary"):
+  if st.button("🚀 Analiz Sınavını Başlat", type="primary"):
     if name_input.strip():
       st.session_state["user_name"] = name_input
       st.session_state["target_lang"] = lang_input
       st.session_state["stage"] = "placement"
+      st.session_state["placement_step"] = 1
       st.rerun()
     else:
       st.error("Lütfen devam etmek için adınızı girin.")
 
-# --- AŞAMA 2: SEVİYE TESPİT SINAVI ---
+# --- AŞAMA 2: 10 SORULUK ADIM ADIM SEVİYE VE KİŞİLİK ANALİZİ ---
 elif st.session_state["stage"] == "placement":
+  step = st.session_state["placement_step"]
   st.title(
-      f"🎯 {st.session_state['user_name']}, Seviye Tespit Sınavına Hoş Geldin!"
+      f"🎯 {st.session_state['user_name']} - Seviye ve Kişilik Analiz Sınavı"
   )
-  st.markdown("Size en uygun yoğun eğitim müfredatını oluşturmak için:")
+  st.progress(
+      step / 10,
+      text=f"Analiz İlerlemesi: Soru {step} / 10 (Varsayılan seçim yok)",
+  )
 
-  with st.form("placement_form"):
-    q1 = st.radio(
-        "1. Kendini nasıl tanıtabilirsin?",
-        [
-            "A) I am student / My name is...",
-            "B) I have been working here for 5 years...",
-            "C) Fluently discussing abstract concepts...",
-        ],
-    )
-    q2 = st.radio(
-        "2. Geçmiş zamanda bir olay anlatırken hangisini tercih edersin?",
-        [
-            "A) Yesterday I go to market",
-            "B) Yesterday I went to the market and bought...",
-            "C) Had I known earlier, I would have...",
-        ],
-    )
-    q3 = st.radio(
-        "3. İletişim kurarken kendinizi nasıl hissediyorsunuz?",
-        [
-            "A) Çok çekiniyorum, sadece temel kelimeler biliyorum.",
-            "B) Basit konularda konuşabiliyorum ama detaylarda zorlanıyorum.",
-            "C) Oldukça rahatım, akıcı konuşabiliyorum.",
-        ],
-    )
+  question_data = {
+      1: {
+          "type": "lang",
+          "q": "1. Kendinizi en rahat nasıl tanıtırsınız? (Dil Bilgisi ve Temel İfade)",
+          "options": [
+              "A) I am student / My name is...",
+              "B) I have been working in this company for 5 years and managing projects.",
+              "C) Fluently discussing complex abstract concepts and theories.",
+          ],
+      },
+      2: {
+          "type": "lang",
+          "q": "2. Geçmiş zamanda geçen bir olayı aktarırken hangisini tercih edersiniz?",
+          "options": [
+              "A) Yesterday I go to the market.",
+              "B) Yesterday I went to the market and bought some groceries.",
+              "C) Had I known about the traffic earlier, I would have taken another route.",
+          ],
+      },
+      3: {
+          "type": "lang",
+          "q": "3. İngilizce bir makale veya metin okurken yaklaşımınız nasıldır?",
+          "options": [
+              "A) Sadece çok temel kelimeleri anlarım, sürekli sözlük kullanırım.",
+              "B) Ana fikri rahatça anlarım, detaylarda ara sıra zorlanırım.",
+              "C) Akıcı bir şekilde edebi veya teknik metinleri zorlanmadan okurum.",
+          ],
+      },
+      4: {
+          "type": "lang",
+          "q": "4. İngilizce konuşurken veya yazarken en çok zorlandığınız alan nedir?",
+          "options": [
+              "A) Cümle kurmakta çekiniyorum ve kelime dağarcığım çok az.",
+              "B) Zamanlar (tenses) ve akıcı bağlaçlar konusunda hatalar yapabiliyorum.",
+              "C) Hiçbir temel zorluğum yok, sadece daha doğal ve sofistike olmak istiyorum.",
+          ],
+      },
+      5: {
+          "type": "lang",
+          "q": "5. Karmaşık bir soruya hedef dilde yanıt vermeniz gerektiğinde tepkiniz ne olur?",
+          "options": [
+              "A) Çok kısa ve basit kelimelerle yanıt vermeye çalışırım.",
+              "B) Düşüncelerimi ifade edebilirim ancak ifade çeşitliliğim sınırlıdır.",
+              "C) Anında zengin kelime dağarcığıyla profesyonelce açıklama yaparım.",
+          ],
+      },
+      6: {
+          "type": "personality",
+          "q": (
+              "6. Bilgi öğrenirken veya problem çözerken hangi yöntemi daha"
+              " çok seversiniz? (Kişilik / Öğrenme Stili)"
+          ),
+          "options": [
+              "A) Adım adım kuralların ezberlenmesi ve net talimatlar.",
+              "B) Gerçek hayat senaryoları ve hikaye tabanlı pratikler.",
+              "C) Analitik veriler, istatistikler ve stratejik vakalar.",
+          ],
+      },
+      7: {
+          "type": "personality",
+          "q": (
+              "7. Günlük rutininizde yeni bir şey öğrenmeye ortalama ne kadar"
+              " süre ayırabilirsiniz?"
+          ),
+          "options": [
+              "A) Kısa ve yoğun seanslar (5-10 dakika).",
+              "B) Orta vadeli derinlemesine seanslar (15-20 dakika).",
+              "C) Uzun ve kapsamlı akademik oturumlar (30+ dakika).",
+          ],
+      },
+      8: {
+          "type": "personality",
+          "q": "8. Motivasyonunuzu en çok ne artırır?",
+          "options": [
+              "A) Başarı rozetleri kazanmak ve küçük hedeflere ulaşmak.",
+              "B) Kendimi bir hikayenin başrolünde hissetmek ve hayallerime yaklaşmak.",
+              "C) Profesyonel sertifikalar almak ve kariyerimde somut ilerleme görmek.",
+          ],
+      },
+      9: {
+          "type": "personality",
+          "q": "9. Hata yaptığınızda geri bildirim alma tarzınız nasıl olmalıdır?",
+          "options": [
+              "A) Çok yumuşak ve Türkçe açıklamalı destek.",
+              "B) Yapıcı eleştiri ve doğru alternatif cümle gösterimi.",
+              "C) Doğrudan hedef dilde profesyonel düzeltme ve ileri düzey uyarı.",
+          ],
+      },
+      10: {
+          "type": "personality",
+          "q": "10. Bu dili öğrenmenizdeki en baskın nihai psikolojik itki nedir?",
+          "options": [
+              "A) Özgüven eksikliğini yenmek ve dünyayla iletişim kurabilmek.",
+              "B) Hayalini kurduğum yaşamı (seyahat, yerleşim vb.) gerçeğe dönüştürmek.",
+              "C) Kariyer basamaklarını hızla tırmanmak ve küresel projelerde lider olmak.",
+          ],
+      },
+  }
 
-    submitted = st.form_submit_button("Seviyemi Belirle ve Devam Et")
-    if submitted:
-      if "A)" in q1 and "A)" in q2:
-        detected_level = "A1"
-      elif "B)" in q1 or "B)" in q2:
-        detected_level = "B1"
-      else:
-        detected_level = "B2"
+  current_q = question_data[step]
 
-      st.session_state["current_level"] = detected_level
-      st.session_state["stage"] = "goal_setup"
-      st.rerun()
+  st.markdown(f"### {current_q['q']}")
+  st.caption("Lütfen size en uygun seçeneği işaretleyin (Varsayılan seçim yok).")
+
+  # index=None ile varsayılan seçim engellenir
+  ans_key = f"q_{step}"
+  selected_ans = st.radio(
+      "Seçenekler:",
+      current_q["options"],
+      index=None,
+      key=ans_key,
+      label_visibility="collapsed",
+  )
+
+  st.markdown("<br>", unsafe_allow_html=True)
+
+  col1, col2 = st.columns([1, 1])
+  with col1:
+    if step > 1:
+      if st.button("⬅️ Önceki Soru"):
+        st.session_state["placement_step"] -= 1
+        st.rerun()
+  with col2:
+    if step < 10:
+      if st.button("Sonraki Soru ➡️", type="primary"):
+        if selected_ans is not None:
+          st.session_state["placement_answers"][step] = selected_ans
+          st.session_state["placement_step"] += 1
+          st.rerun()
+        else:
+          st.warning(
+              "Lütfen ilerlemek için bir seçenek işaretleyin (Varsayılan seçim"
+              " yoktur)."
+          )
+    else:
+      if st.button(
+          "Analizi Tamamla ve Müfredatımı Oluştur 🎯", type="primary"
+      ):
+        if selected_ans is not None:
+          st.session_state["placement_answers"][step] = selected_ans
+
+          # Tüm yanıtları birleştirip LLM ile Seviye ve Kişilik Analizi yapalım
+          answers_summary = "\n".join(
+              f"Soru {k}: {v}"
+              for k, v in st.session_state["placement_answers"].items()
+          )
+
+          analysis_prompt = (
+              "Analyze the following 10 placement and personality test answers"
+              " for a language learner. Determine their exact CEFR level (A1,"
+              " A2, B1, or B2) and summarize their psychological/learning"
+              " personality profile (e.g., narrative-driven, analytical,"
+              " visual, quick-session oriented). Provide the output in Turkish"
+              " in this exact format:\nSEVIYE: [Level]\nPROFIL: [Profile"
+              " description]\n\nAnswers:\n" + answers_summary
+          )
+
+          try:
+            res = client.chat.completions.create(
+                model="llama-3.3-70b-versatile",
+                messages=[{"role": "user", "content": analysis_prompt}],
+                temperature=0.3,
+            )
+            analysis_text = res.choices[0].message.content
+
+            # Basit parse
+            detected_lvl = "A1"
+            detected_profile = "Genel öğrenme profili"
+            for line in analysis_text.split("\n"):
+              if "SEVIYE:" in line:
+                detected_lvl = (
+                    line.replace("SEVIYE:", "").strip().upper()[:2]
+                )
+              if "PROFIL:" in line:
+                detected_profile = line.replace("PROFIL:", "").strip()
+
+            if detected_lvl not in ["A1", "A2", "B1", "B2"]:
+              detected_lvl = "A1"
+
+            st.session_state["current_level"] = detected_lvl
+            st.session_state["personality_profile"] = detected_profile
+          except Exception:
+            st.session_state["current_level"] = "A1"
+            st.session_state["personality_profile"] = (
+                "Hikaye tabanlı dinamik öğrenici"
+            )
+
+          st.session_state["stage"] = "goal_setup"
+          st.rerun()
+        else:
+          st.warning("Lütfen son soruyu da yanıtlayın.")
 
 # --- AŞAMA 3: HİKAYE VE HEDEF BELİRLEME ---
 elif st.session_state["stage"] == "goal_setup":
-  st.title(f"🌟 {st.session_state['user_name']}, Hedefini ve Hayalini Tanımla")
-  st.markdown(
-      f"Tespit Edilen Seviye: **{st.session_state['current_level']}** | Bu"
-      " eğitimi ne için alıyorsun?"
+  st.title(f"🌟 {st.session_state['user_name']}, Kişisel Hedefini Tanımla")
+  st.success(
+      f"🔍 **Analiz Sonucu:** Seviyeniz **{st.session_state['current_level']}**"
+      f" | Kişilik & Öğrenme Profiliniz: *"
+      f"{st.session_state['personality_profile']}*"
   )
 
   with st.form("story_goal_form"):
@@ -143,19 +309,21 @@ elif st.session_state["stage"] == "goal_setup":
         ),
     )
 
-    goal_submitted = st.form_submit_button("Kapsamlı Eğitim Planımı Oluştur 🚀")
+    goal_submitted = st.form_submit_button(
+        "Kişiselleştirilmiş Yoğun Müfredatımı Oluştur 🚀"
+    )
     if goal_submitted:
       st.session_state["user_goal"] = goal_choice
       st.session_state["user_dream"] = (
           dream_input if dream_input.strip() else "Kendi başarı hikayesini yazmak"
       )
 
-      # 4 Kapsamlı ve Detaylı Modül
+      # Profil ve seviyeye uygun 4 detaylı modül
+      lvl = st.session_state["current_level"]
       st.session_state["modules"] = [
           {
               "title": (
-                  "Modül 1: Temeller ve Özgüven İnşası (Foundation & First"
-                  " Contact)"
+                  f"Modül 1: {lvl} Seviye Temelleri ve Özgüven İnşası"
               ),
               "status": "Açık",
               "duration": "10 dk",
@@ -163,26 +331,21 @@ elif st.session_state["stage"] == "goal_setup":
               "skill": "Okuma & Temel Yapılar",
           },
           {
-              "title": (
-                  "Modül 2: Günlük Senaryolar ve Akış Yönetimi (Core Context)"
-              ),
+              "title": f"Modül 2: {lvl} Günlük Senaryolar ve Akış Yönetimi",
               "status": "Kilitli",
               "duration": "10 dk",
               "words": 25,
-              "skill": "Kelime & Cübbe Kalıpları",
+              "skill": "Kelime & Cümle Kalıpları",
           },
           {
-              "title": (
-                  "Modül 3: Stratejik İletişim ve Problem Çözme (Advanced"
-                  " Dialogue)"
-              ),
+              "title": f"Modül 3: {lvl} Stratejik İletişim ve Problem Çözme",
               "status": "Kilitli",
               "duration": "12 dk",
               "words": 30,
               "skill": "İleri Anlama & Pratik",
           },
           {
-              "title": "Modül 4: Hedef Zirvesi ve Küresel Yetkinlik (Mastery)",
+              "title": f"Modül 4: {lvl} Hedef Zirvesi ve Küresel Yetkinlik",
               "status": "Kilitli",
               "duration": "15 dk",
               "words": 35,
@@ -195,13 +358,13 @@ elif st.session_state["stage"] == "goal_setup":
 
 # --- AŞAMA 4: DAHİLİ KURS PANELI (DASHBOARD) ---
 elif st.session_state["stage"] == "dashboard":
-  st.title(f"🗺️ {st.session_state['user_name']} - Müfredat ve Eğitim Paneli")
+  st.title(f"🗺️ {st.session_state['user_name']} - Kişiselleştirilmiş Eğitim Paneli")
   st.success(
-      f"🎯 **Hedef:** {st.session_state['user_goal']} | 🌟 **Hayalin:**"
-      f" *{st.session_state['user_dream']}*"
+      f"🎯 **Hedef:** {st.session_state['user_goal']} | 🌟 **Profil:**"
+      f" {st.session_state['personality_profile']}"
   )
 
-  st.markdown("### 📚 Yoğun Eğitim Modülleriniz (5-10 Dk Dersler)")
+  st.markdown("### 📚 5-10 Dakikalık Yoğun Eğitim Modülleriniz")
 
   for idx, mod in enumerate(st.session_state["modules"]):
     col1, col2, col3 = st.columns([3, 1, 1])
@@ -219,7 +382,6 @@ elif st.session_state["stage"] == "dashboard":
         if st.button(btn_txt, key=f"mod_btn_{idx}", type="primary"):
           st.session_state["current_module_idx"] = idx
           st.session_state["lesson_step"] = 1
-          # Önceki modül geçici içeriklerini temizle
           for key in [
               "reading_content",
               "vocab_content",
@@ -253,18 +415,18 @@ elif st.session_state["stage"] == "learning":
   if step == 1:
     st.subheader("📜 1. Bölüm: Bağlamsal Okuma ve Hikaye Analizi")
     st.markdown(
-        "Bu bölümde hedefiniz doğrultusunda hazırlanmış gerçek hayat"
-        " senaryosunu inceleyin."
+        "Kişilik profilinize ve hedefinize uygun olarak hazırlanmış ders"
+        " metni:"
     )
 
     if "reading_content" not in st.session_state:
       prompt_read = (
           f"Create a rich, professional, 2-paragraph educational reading"
           f" passage in {st.session_state['target_lang']} for level"
-          f" {st.session_state['current_level']}, tailored to the user's dream:"
-          f" '{st.session_state['user_dream']}' and module '{active_mod['title']}'."
-          " Include a clear Turkish summary/translation right below it to"
-          " ensure complete comprehension."
+          f" {st.session_state['current_level']}, tailored to user profile:"
+          f" '{st.session_state['personality_profile']}' and dream:"
+          f" '{st.session_state['user_dream']}'."
+          " Include a clear Turkish summary/translation right below it."
       )
       try:
         res = client.chat.completions.create(
@@ -295,9 +457,9 @@ elif st.session_state["stage"] == "learning":
     if "vocab_content" not in st.session_state:
       prompt_vocab = (
           f"List 5 essential vocabulary words and 3 key sentence patterns from"
-          f" the previous context for {st.session_state['target_lang']} at"
-          f" level {st.session_state['current_level']}. Explain their"
-          f" meanings and usages in Turkish clearly with examples."
+          f" the context for {st.session_state['target_lang']} at level"
+          f" {st.session_state['current_level']}. Explain meanings and"
+          " usages in Turkish with examples."
       )
       try:
         res = client.chat.completions.create(
@@ -333,10 +495,9 @@ elif st.session_state["stage"] == "learning":
       prompt_quiz = (
           f"Create 2 high-quality multiple choice or fill-in-the-blank"
           f" educational exercises in {st.session_state['target_lang']} for"
-          f" level {st.session_state['current_level']} based on module"
-          f" '{active_mod['title']}'. Provide helpful hints in Turkish, 4"
-          f" options (A, B, C, D) per question, and explicitly include 'Dogru"
-          f" Cevaplar: ...' at the very end."
+          f" level {st.session_state['current_level']}. Provide helpful hints"
+          f" in Turkish, 4 options (A, B, C, D) per question, and explicitly"
+          f" include 'Dogru Cevaplar: ...' at the very end."
       )
       try:
         res = client.chat.completions.create(
@@ -385,7 +546,6 @@ elif st.session_state["stage"] == "learning":
 
     if st.button("Dersi Tamamla ve Bölüm Karnesini Gör 🏆", type="primary"):
       if user_writing.strip():
-        # Karnede gösterilecek verileri hazırla
         st.session_state["current_report"] = {
             "module_title": active_mod["title"],
             "learned_words": active_mod["words"],
@@ -393,7 +553,6 @@ elif st.session_state["stage"] == "learning":
             "status": "Başarıyla Tamamlandı",
         }
 
-        # Modülü güncelle
         if active_mod["status"] != "Tamamlandı":
           st.session_state["total_words"] += active_mod["words"]
           st.session_state["achievements"].append(active_mod["title"])
@@ -419,7 +578,7 @@ elif st.session_state["stage"] == "report_card":
         <h3 style="color: #1b5e20; text-align: center;">📚 LingoFlow Pro Eğitim Karnesi</h3>
         <hr>
         <p><b>Öğrenci Adı:</b> {st.session_state['user_name']}</p>
-        <p><b>Hedef Dil / Seviye:</b> {st.session_state['target_lang']} ({st.session_state['current_level']})</p>
+        <p><b>Hedef Dil / Seviye / Profil:</b> {st.session_state['target_lang']} ({st.session_state['current_level']}) - {st.session_state['personality_profile']}</p>
         <p><b>Tamamlanan Modül:</b> {report.get('module_title')}</p>
         <p><b>Durum:</b> <span style="color: green; font-weight: bold;">{report.get('status')}</span></p>
         <hr>
@@ -441,7 +600,6 @@ elif st.session_state["stage"] == "report_card":
   col1, col2 = st.columns(2)
   with col1:
     if st.button("🗺️ Müfredat Paneline Geri Dön", type="primary"):
-      # Sonraki modülü aç
       next_idx = st.session_state["current_module_idx"] + 1
       if next_idx < len(st.session_state["modules"]):
         if st.session_state["modules"][next_idx]["status"] == "Kilitli":
@@ -465,7 +623,7 @@ elif st.session_state["stage"] == "certificate":
         <p>Bu belge,</p>
         <h2><b>{st.session_state['user_name']}</b></h2>
         <p>tarafından <b>{st.session_state['target_lang']}</b> dilinde tamamlanan yoğun program sonucunda,</p>
-        <h3><b>{st.session_state['current_level']} Seviyesi Profesyonel Eğitim Serisi</b>ni</h3>
+        <h3><b>{st.session_state['current_level']} Seviyesi Kişiselleştirilmiş Eğitim Serisi</b>ni</h3>
         <p>başarıyla bitirdiğini ve <i>"{st.session_state['user_dream']}"</i> hedefine ulaştığını tasdik eder.</p>
         <hr style="width: 40%; margin: 20px auto;">
         <p><b>Toplam Kazanılan Kelime:</b> {st.session_state['total_words']} adet</p>
