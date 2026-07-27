@@ -20,7 +20,7 @@ client = Groq(api_key=api_key)
 
 # --- OTURUM DURUMU (STATE) BAŞLANGIÇLARI ---
 if "stage" not in st.session_state:
-  st.session_state["stage"] = "welcome"  # welcome, placement, dashboard, learning, certificate
+  st.session_state["stage"] = "welcome"
 if "user_name" not in st.session_state:
   st.session_state["user_name"] = ""
 if "target_lang" not in st.session_state:
@@ -35,14 +35,18 @@ if "total_words" not in st.session_state:
   st.session_state["total_words"] = 0
 if "achievements" not in st.session_state:
   st.session_state["achievements"] = []
+if "quiz_active" not in st.session_state:
+  st.session_state["quiz_active"] = False
+if "quiz_question" not in st.session_state:
+  st.session_state["quiz_question"] = ""
 
 
 # --- AŞAMA 1: TANIŞMA VE DİL SEÇİMİ ---
 if st.session_state["stage"] == "welcome":
   st.title("🎓 LingoFlow Academy'ye Hoş Geldiniz!")
   st.markdown(
-      "Burası hata yapmaktan korkmayacağınız, tamamen size özel planlanmış,"
-      " eğlenceli ve interaktif bir dil öğrenme stüdyosudur."
+      "Hata yapmaktan korkmayacağınız, tamamen size özel planlanmış, eğlenceli"
+      " ve interaktif dil öğrenme stüdyosu."
   )
 
   col1, col2 = st.columns(2)
@@ -101,7 +105,6 @@ elif st.session_state["stage"] == "placement":
 
     submitted = st.form_submit_button("Sınavı Tamamla ve Planımı Oluştur")
     if submitted:
-      # Basit bir puanlama mantığıyla seviye belirleyelim
       if "A)" in q1 and "A)" in q2:
         detected_level = "A1"
       elif "B)" in q1 or "B)" in q2:
@@ -111,7 +114,6 @@ elif st.session_state["stage"] == "placement":
 
       st.session_state["current_level"] = detected_level
 
-      # Seviyeye göre modülleri oluşturalım
       if detected_level == "A1":
         st.session_state["modules"] = [
             {
@@ -173,21 +175,22 @@ elif st.session_state["stage"] == "dashboard":
     with [col_m1, col_m2, col_m3][idx % 3]:
       st.markdown(f"**{mod['title']}**")
       st.caption(f"Odak: {mod['skill']} | Kelime: {mod['words']} adet")
-      if mod["status"] == "Açık":
-        if st.button(f"Derse Başla 🚀", key=f"mod_{idx}"):
+
+      # Açık veya Tamamlanmış modüllere tekrar girebilme izni
+      if mod["status"] in ["Açık", "Tamamlandı"]:
+        btn_label = "Derse Başla 🚀" if mod["status"] == "Açık" else "Tekrar Et 🔄"
+        if st.button(btn_label, key=f"mod_{idx}"):
           st.session_state["current_module_idx"] = idx
+          st.session_state["quiz_active"] = False
           st.session_state["stage"] = "learning"
           st.rerun()
-      elif mod["status"] == "Tamamlandı":
-        st.success("✅ Tamamlandı")
       else:
         st.info("🔒 Kilitli")
 
   st.markdown("---")
   st.info(
-      "💡 **İpucu:** Hiç çekinmeden yabancı dilde sesli veya yazılı cümleler"
-      " kurun. Hatalarınız anında nazikçe düzeltilerek öğrenmeniz"
-      " pekiştirilecektir!"
+      "💡 **İpucu:** Hiç çekinmeden yabancı dilde cümleler kurun. Hatalarınız"
+      " anında nazikçe düzeltilerek öğrenmeniz pekiştirilecektir!"
   )
 
 # --- AŞAMA 4: ETKİLEŞİMLİ DERS VE PRATİK (LEARNING STAGE) ---
@@ -202,7 +205,6 @@ elif st.session_state["stage"] == "learning":
   )
 
   if "lesson_chat" not in st.session_state:
-    # Yapay zekadan bu modül için kısa, eğlenceli bir ders açılışı isteyelim
     intro_prompt = (
         f"You are a friendly, encouraging language tutor for"
         f" {st.session_state['target_lang']} at level"
@@ -233,6 +235,7 @@ elif st.session_state["stage"] == "learning":
     with st.chat_message(msg["role"]):
       st.markdown(msg["content"])
 
+  # Sohbet Giriş Barı
   if user_reply := st.chat_input("Cümlenizi yazın, çekinmeden pratik yapın..."):
     st.session_state["lesson_chat"].append(
         {"role": "user", "content": user_reply}
@@ -266,25 +269,72 @@ elif st.session_state["stage"] == "learning":
     with st.chat_message("assistant"):
       st.markdown(tutor_reply)
 
+  # --- SOHBET BARININ ALTINDAKİ KONTROL VE TEST ALANI ---
   st.markdown("---")
-  if st.button("✅ Modülü Tamamla ve Tekrar Testine Geç"):
-    # İstatistikleri güncelle
-    st.session_state["total_words"] += active_mod["words"]
-    st.session_state["achievements"].append(active_mod["title"])
-    st.session_state["modules"][mod_idx]["status"] = "Tamamlandı"
+  st.markdown("### 🎯 Bölüm Kontrol ve Tekrar Testi")
 
-    # Sonraki modülü aç veya sertifikaya git
-    if mod_idx + 1 < len(st.session_state["modules"]):
-      st.session_state["modules"][mod_idx + 1]["status"] = "Açık"
+  if not st.session_state["quiz_active"]:
+    if st.button("📝 Bölüm Sonu Tekrar Testini Başlat", type="secondary"):
+      # Yapay zekadan kısa bir tekrar testi sorusu isteyelim
+      q_prompt = (
+          f"Create 1 short multiple-choice review question in"
+          f" {st.session_state['target_lang']} for level"
+          f" {st.session_state['current_level']} based on module"
+          f" {active_mod['title']}. Give 4 options (A, B, C, D) and state the"
+          " correct answer clearly at the end as 'Doğru Cevap: X'."
+      )
+      try:
+        q_res = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[{"role": "user", "content": q_prompt}],
+            temperature=0.7,
+        )
+        st.session_state["quiz_question"] = q_res.choices[0].message.content
+        st.session_state["quiz_active"] = True
+        st.rerun()
+      except Exception as e:
+        st.error(f"Test yüklenirken hata oluştu: {e}")
+  else:
+    st.info("Lütfen aşağıdaki tekrar testini yanıtlayıp kontrol edin:")
+    st.markdown(st.session_state["quiz_question"])
+    user_quiz_ans = st.text_input(
+        "Cevabınız (Örn: A, B, C veya D):", key="quiz_answer_input"
+    )
+
+    if st.button("✅ Testi Kontrol Et ve Modülü Tamamla", type="primary"):
+      if user_quiz_ans.strip():
+        # İstatistikleri güncelle ve modülü tamamla
+        if active_mod["status"] != "Tamamlandı":
+          st.session_state["total_words"] += active_mod["words"]
+          st.session_state["achievements"].append(active_mod["title"])
+          st.session_state["modules"][mod_idx]["status"] = "Tamamlandı"
+
+        st.session_state["quiz_active"] = False
+
+        # Sonraki modülü aç veya sertifikaya git
+        if mod_idx + 1 < len(st.session_state["modules"]):
+          if st.session_state["modules"][mod_idx + 1]["status"] == "Kilitli":
+            st.session_state["modules"][mod_idx + 1]["status"] = "Açık"
+          del st.session_state["lesson_chat"]
+          st.session_state["stage"] = "dashboard"
+          st.success(
+              "Tebrikler! Tekrar testini başarıyla geçtiniz ve modülü"
+              " tamamladınız."
+          )
+          st.rerun()
+        else:
+          del st.session_state["lesson_chat"]
+          st.session_state["stage"] = "certificate"
+          st.rerun()
+      else:
+        st.warning("Lütfen bir cevap yazın.")
+
+  if st.button("🔙 Panele Geri Dön"):
+    st.session_state["quiz_active"] = False
+    if "lesson_chat" in st.session_state:
       del st.session_state["lesson_chat"]
-      st.session_state["stage"] = "dashboard"
-      st.success("Tebrikler! Modül başarıyla tamamlandı.")
-      st.rerun()
-    else:
-      # Tüm modüller bitti -> Sertifika aşaması
-      del st.session_state["lesson_chat"]
-      st.session_state["stage"] = "certificate"
-      st.rerun()
+    st.session_state["stage"] = "dashboard"
+    st.rerun()
 
 # --- AŞAMA 5: SERTİFİKA VE GELİŞİM TABLOSU ---
 elif st.session_state["stage"] == "certificate":
@@ -310,7 +360,6 @@ elif st.session_state["stage"] == "certificate":
 
   st.markdown("<br>", unsafe_allow_html=True)
   if st.button("🌟 Yeni Seviyeye (Sonraki Aşama) Geçiş Yap", type="primary"):
-    # Seviye atlatma
     if st.session_state["current_level"] == "A1":
       st.session_state["current_level"] = "A2"
     elif st.session_state["current_level"] == "A2":
@@ -318,7 +367,6 @@ elif st.session_state["stage"] == "certificate":
     else:
       st.session_state["current_level"] = "B2/C1"
 
-    # Yeni modülleri yükle
     st.session_state["modules"] = [
         {
             "title": f"Modül 1: {st.session_state['current_level']} İleri Pratik",
