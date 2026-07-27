@@ -204,8 +204,8 @@ if st.session_state["stage"] == "welcome":
   st.title("🎓 LingoFlow Pro - Detaylı Bölüm Karnesi & Portre")
   st.markdown(
       "10 soruluk kapsamlı analiz sınavımızla dil seviyenizi belirliyor;"
-      " karnelerde detaylı bölüm portreleri, kelime özetleri ve dil bilgisi"
-      " terimleri sunan modüllerimizi yüklüyoruz."
+      " karnelerde detaylı bölüm portreleri, kelime özetleri ve hedef dil"
+      " gramer yapısı sunan modüllerimizi yüklüyoruz."
   )
 
   col1, col2 = st.columns(2)
@@ -677,18 +677,23 @@ elif st.session_state["stage"] == "learning":
     if st.button("Dersi Tamamla ve Bölüm Karnesini Gör 🏆", type="primary"):
       if user_writing.strip():
         with st.spinner(
-            "Bölümün portresi, öğrenilen kelime ve dil bilgisi detayları"
-            " hazırlanıyor..."
+            "Bölümün portresi, öğrenilen kelime listesi ve hedef dil dil"
+            " bilgisi detayları hazırlanıyor..."
         ):
           report_prompt = (
               f"Generate a comprehensive learning report for module"
-              f" '{active_mod['title']}' in {st.session_state['target_lang']} at"
-              f" level {st.session_state['current_level']}.\n"
+              f" '{active_mod['title']}' in target language"
+              f" '{st.session_state['target_lang']}' at level"
+              f" {st.session_state['current_level']}.\n"
               "Provide your response using EXACTLY these three headings on"
-              " separate lines:\nPORTRE: [atmospheric module portrait and"
-              " context description in Turkish]\nKELIMELER: [list of words and"
-              " patterns learned in Turkish/Target language]\nDIL_BILGISI:"
-              " [grammar terms and structures in Turkish]"
+              " separate lines:\nPORTRE: [Atmospheric module portrait and"
+              " context description in Turkish]\nKELIMELER: [A detailed, bulleted"
+              " list of at least 5-8 essential vocabulary words and key"
+              " sentence patterns learned in {st.session_state['target_lang']} with"
+              " their Turkish meanings]\nDIL_BILGISI: [Grammar rules, terms and"
+              " structures specific to {st.session_state['target_lang']} (e.g."
+              " English grammar rules), explained clearly in Turkish. Do NOT"
+              " explain Turkish grammar.]"
           )
           try:
             res = client.chat.completions.create(
@@ -712,7 +717,6 @@ elif st.session_state["stage"] == "learning":
             dil_bilgisi_lines = []
 
             for line in lines:
-              # Modelin ekleyebileceği *, # gibi markdown karakterlerini temizleyerek kontrol et
               clean_check = (
                   line.replace("*", "").replace("#", "").strip().upper()
               )
@@ -758,7 +762,10 @@ elif st.session_state["stage"] == "learning":
 
           except Exception:
             b_p = "Bu bölüm, hedef dil yetkinliğini artırmaya yönelik özel bir tema sunar."
-            k_v_k = "Modül kelime ve kalıpları başarıyla işlendi."
+            k_v_k = (
+                f"Modüle ait {st.session_state['target_lang']} kelime ve"
+                " kalıpları başarıyla tamamlandı."
+            )
             d_b = active_mod["skill"]
 
         st.session_state["current_report"] = {
@@ -803,10 +810,16 @@ elif st.session_state["stage"] == "report_card":
   st.markdown("#### 🎨 Bölümün Portresi")
   st.info(report.get("bolum_portresi"))
 
-  st.markdown("#### 📖 Öğrenilen Kelimeler ve Cümle Kalıpları")
+  st.markdown(
+      f"#### 📖 Öğrenilen {st.session_state['target_lang']} Kelimeler ve Cümle"
+      " Kalıpları"
+  )
   st.success(report.get("kelimeler_ve_kaliplar"))
 
-  st.markdown("#### ⚙️ Öğrenilen Dil Bilgisi Terimleri ve Yapılar")
+  st.markdown(
+      f"#### ⚙️ Hedef Dil ({st.session_state['target_lang']}) Dil Bilgisi"
+      " Kuralları ve Yapılar"
+  )
   st.warning(report.get("dil_bilgisi"))
 
   st.markdown("---")
