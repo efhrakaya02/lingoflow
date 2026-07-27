@@ -683,12 +683,12 @@ elif st.session_state["stage"] == "learning":
           report_prompt = (
               f"Generate a comprehensive learning report for module"
               f" '{active_mod['title']}' in {st.session_state['target_lang']} at"
-              f" level {st.session_state['current_level']}. "
-              "Return strictly a valid JSON object with these exact keys: "
-              "\"kelimeler_ve_kaliplar\" (string containing list of words and patterns learned), "
-              "\"dil_bilgisi\" (string containing grammar terms and structures), "
-              "\"bolum_portresi\" (string describing atmospheric module portrait and context)."
-              " Do not include any extra markdown formatting or backticks around the JSON."
+              f" level {st.session_state['current_level']}.\n"
+              "Provide your response using EXACTLY these three headings on"
+              " separate lines:\nPORTRE: [atmospheric module portrait and"
+              " context description in Turkish]\nKELIMELER: [list of words and"
+              " patterns learned in Turkish/Target language]\nDIL_BILGISI:"
+              " [grammar terms and structures in Turkish]"
           )
           try:
             res = client.chat.completions.create(
@@ -697,26 +697,60 @@ elif st.session_state["stage"] == "learning":
                 temperature=0.4,
             )
             raw_text = res.choices[0].message.content.strip()
-            if raw_text.startswith("```json"):
-              raw_text = raw_text[7:]
-            if raw_text.startswith("```"):
-              raw_text = raw_text[3:]
-            if raw_text.endswith("```"):
-              raw_text = raw_text[:-3]
 
-            report_json = json.loads(raw_text.strip())
-            k_v_k = report_json.get(
-                "kelimeler_ve_kaliplar", "Modül kelime ve kalıpları işlendi."
+            b_p = (
+                "Bu bölüm, hedef dil yetkinliğini artırmaya yönelik özel bir"
+                " tema sunar."
             )
-            d_b = report_json.get("dil_bilgisi", active_mod["skill"])
-            b_p = report_json.get(
-                "bolum_portresi",
-                "Bu bölüm, akıcılık yolculuğunda kilit bir duraktır.",
-            )
-          except Exception:
-            k_v_k = "Modül kelime ve kalıpları başarıyla tamamlandı."
+            k_v_k = "Modül kelime ve kalıpları başarıyla işlendi."
             d_b = active_mod["skill"]
+
+            lines = raw_text.split("\n")
+            current_section = None
+            portre_lines = []
+            kelimeler_lines = []
+            dil_bilgisi_lines = []
+
+            for line in lines:
+              upper_line = line.upper()
+              if upper_line.startswith("PORTRE:"):
+                current_section = "PORTRE"
+                portre_lines.append(line.replace("PORTRE:", "").strip())
+              elif upper_line.startswith("KELIMELER:"):
+                current_section = "KELIMELER"
+                kelimeler_lines.append(line.replace("KELIMELER:", "").strip())
+              elif upper_line.startswith("DIL_BILGISI:"):
+                current_section = "DIL_BILGISI"
+                dil_bilgisi_lines.append(
+                    line.replace("DIL_BILGISI:", "").strip()
+                )
+              else:
+                if current_section == "PORTRE":
+                  portre_lines.append(line)
+                elif current_section == "KELIMELER":
+                  kelimeler_lines.append(line)
+                elif current_section == "DIL_BILGISI":
+                  dil_bilgisi_lines.append(line)
+
+            if portre_lines and "".join(portre_lines).strip():
+              b_p = "\n".join(portre_lines).strip()
+            if kelimeler_lines and "".join(kelimeler_lines).strip():
+              k_v_k = "\n".join(kelimeler_lines).strip()
+            if dil_bilgisi_lines and "".join(dil_bilgisi_lines).strip():
+              d_b = "\n".join(dil_bilgisi_lines).strip()
+
+            # Eğer başlıklar eşleşmediyse tüm ham metni portreye ver
+            if (
+                b_p
+                == "Bu bölüm, hedef dil yetkinliğini artırmaya yönelik özel bir tema sunar."
+                and raw_text
+            ):
+              b_p = raw_text
+
+          except Exception:
             b_p = "Bu bölüm, hedef dil yetkinliğini artırmaya yönelik özel bir tema sunar."
+            k_v_k = "Modül kelime ve kalıpları başarıyla işlendi."
+            d_b = active_mod["skill"]
 
         st.session_state["current_report"] = {
             "module_title": active_mod["title"],
