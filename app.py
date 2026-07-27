@@ -712,18 +712,28 @@ elif st.session_state["stage"] == "learning":
             dil_bilgisi_lines = []
 
             for line in lines:
-              upper_line = line.upper()
-              if upper_line.startswith("PORTRE:"):
+              # Modelin ekleyebileceği *, # gibi markdown karakterlerini temizleyerek kontrol et
+              clean_check = (
+                  line.replace("*", "").replace("#", "").strip().upper()
+              )
+
+              if clean_check.startswith("PORTRE:"):
                 current_section = "PORTRE"
-                portre_lines.append(line.replace("PORTRE:", "").strip())
-              elif upper_line.startswith("KELIMELER:"):
+                content = line.split(":", 1)[1].strip() if ":" in line else ""
+                if content:
+                  portre_lines.append(content)
+              elif clean_check.startswith("KELIMELER:"):
                 current_section = "KELIMELER"
-                kelimeler_lines.append(line.replace("KELIMELER:", "").strip())
-              elif upper_line.startswith("DIL_BILGISI:"):
+                content = line.split(":", 1)[1].strip() if ":" in line else ""
+                if content:
+                  kelimeler_lines.append(content)
+              elif clean_check.startswith("DIL_BILGISI:") or clean_check.startswith(
+                  "DİLBİLGİSİ:"
+              ):
                 current_section = "DIL_BILGISI"
-                dil_bilgisi_lines.append(
-                    line.replace("DIL_BILGISI:", "").strip()
-                )
+                content = line.split(":", 1)[1].strip() if ":" in line else ""
+                if content:
+                  dil_bilgisi_lines.append(content)
               else:
                 if current_section == "PORTRE":
                   portre_lines.append(line)
@@ -739,7 +749,6 @@ elif st.session_state["stage"] == "learning":
             if dil_bilgisi_lines and "".join(dil_bilgisi_lines).strip():
               d_b = "\n".join(dil_bilgisi_lines).strip()
 
-            # Eğer başlıklar eşleşmediyse tüm ham metni portreye ver
             if (
                 b_p
                 == "Bu bölüm, hedef dil yetkinliğini artırmaya yönelik özel bir tema sunar."
@@ -781,36 +790,33 @@ elif st.session_state["stage"] == "report_card":
 
   st.markdown(
       f"""
-    <div style="border: 3px solid #2e7d32; padding: 25px; border-radius: 12px; background-color: #f1f8e9;">
-        <h3 style="color: #1b5e20; text-align: center;">📚 LingoFlow Pro Modül Karne Raporu</h3>
-        <hr>
-        <p><b>Öğrenci Adı:</b> {st.session_state['user_name']}</p>
-        <p><b>Hedef Dil / Seviye:</b> {st.session_state['target_lang']} ({st.session_state['current_level']}) - {st.session_state['personality_profile']}</p>
-        <p><b>Tamamlanan Modül:</b> {report.get('module_title')}</p>
-        <p><b>Durum:</b> <span style="color: green; font-weight: bold;">{report.get('status')}</span></p>
-        <hr>
-        
-        <h4 style="color: #2e7d32;">🎨 Bölümün Portresi</h4>
-        <div style="background: #ffffff; padding: 15px; border-radius: 8px; border-left: 5px solid #2e7d32; margin-bottom: 15px; color: #333333;">
-            {report.get('bolum_portresi')}
-        </div>
-
-        <h4 style="color: #2e7d32;">📖 Öğrenilen Kelimeler ve Cümle Kalıpları</h4>
-        <div style="background: #ffffff; padding: 15px; border-radius: 8px; border-left: 5px solid #ffb300; margin-bottom: 15px; color: #333333;">
-            {report.get('kelimeler_ve_kaliplar')}
-        </div>
-
-        <h4 style="color: #2e7d32;">⚙️ Öğrenilen Dil Bilgisi Terimleri ve Yapılar</h4>
-        <div style="background: #ffffff; padding: 15px; border-radius: 8px; border-left: 5px solid #1976d2; margin-bottom: 15px; color: #333333;">
-            {report.get('dil_bilgisi')}
-        </div>
-        
-        <hr>
-        <p><b>✨ Kazanım İstatistikleri:</b> Bu derste eklenen dağarcık: <b>+{report.get('learned_words')} kelime</b> | Toplam Biriken: <b>{st.session_state['total_words']} kelime</b></p>
-        <p><b>Yazdığınız Pratik Cümle:</b> <i>"{report.get('user_text')}"</i></p>
-    </div>
+    ### 📚 LingoFlow Pro Modül Karne Raporu
+    **Öğrenci Adı:** {st.session_state['user_name']}  
+    **Hedef Dil / Seviye:** {st.session_state['target_lang']} ({st.session_state['current_level']}) - {st.session_state['personality_profile']}  
+    **Tamamlanan Modül:** {report.get('module_title')}  
+    **Durum:** <span style="color: green; font-weight: bold;">{report.get('status')}</span>
+    ---
     """,
       unsafe_allow_html=True,
+  )
+
+  st.markdown("#### 🎨 Bölümün Portresi")
+  st.info(report.get("bolum_portresi"))
+
+  st.markdown("#### 📖 Öğrenilen Kelimeler ve Cümle Kalıpları")
+  st.success(report.get("kelimeler_ve_kaliplar"))
+
+  st.markdown("#### ⚙️ Öğrenilen Dil Bilgisi Terimleri ve Yapılar")
+  st.warning(report.get("dil_bilgisi"))
+
+  st.markdown("---")
+  st.markdown(
+      f"✨ **Kazanım İstatistikleri:** Bu derste eklenen dağarcık:"
+      f" **+{report.get('learned_words')} kelime** | Toplam Biriken:"
+      f" **{st.session_state['total_words']} kelime**"
+  )
+  st.markdown(
+      f"✍️ **Yazdığınız Pratik Cümle:** *\"{report.get('user_text')}\"*"
   )
 
   st.markdown("<br>", unsafe_allow_html=True)
@@ -837,14 +843,14 @@ elif st.session_state["stage"] == "certificate":
       f"""
     <div style="border: 5px solid #ffb300; padding: 35px; border-radius: 15px; text-align: center; background-color: #fffde7;">
         <h1 style="color: #f57f17;">🎓 ÜSTÜN BAŞARI SERTİFİKASI 🎓</h1>
-        <p>Bu belge,</p>
-        <h2><b>{st.session_state['user_name']}</b></h2>
-        <p>tarafından <b>{st.session_state['target_lang']}</b> dilinde tamamlanan program sonucunda,</p>
-        <h3><b>{st.session_state['current_level']} Seviyesi JSON Müfredat Serisi</b>ni</h3>
-        <p>başarıyla bitirdiğini ve <i>"{st.session_state['user_dream']}"</i> hedefine ulaştığını tasdik eder.</p>
+        <p style="color: #333333;">Bu belge,</p>
+        <h2 style="color: #333333;"><b>{st.session_state['user_name']}</b></h2>
+        <p style="color: #333333;">tarafından <b>{st.session_state['target_lang']}</b> dilinde tamamlanan program sonucunda,</p>
+        <h3 style="color: #333333;"><b>{st.session_state['current_level']} Seviyesi JSON Müfredat Serisi</b>ni</h3>
+        <p style="color: #333333;">başarıyla bitirdiğini ve <i>"{st.session_state['user_dream']}"</i> hedefine ulaştığını tasdik eder.</p>
         <hr style="width: 40%; margin: 20px auto;">
-        <p><b>Toplam Kazanılan Kelime:</b> {st.session_state['total_words']} adet</p>
-        <p><b>Tamamlanan Modüller:</b> {', '.join(st.session_state['achievements'])}</p>
+        <p style="color: #333333;"><b>Toplam Kazanılan Kelime:</b> {st.session_state['total_words']} adet</p>
+        <p style="color: #333333;"><b>Tamamlanan Modüller:</b> {', '.join(st.session_state['achievements'])}</p>
     </div>
     """,
       unsafe_allow_html=True,
