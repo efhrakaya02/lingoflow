@@ -1,0 +1,642 @@
+{
+  "course": "Lingoflow A1 Master Curriculum",
+  "target": "CEFR A1 & Certification Exams (KET/telc)",
+  "modules": [
+    {
+      "module_id": 1,
+      "title": "Temel Sesletim ve Tanışma (Phonetics & Greetings)",
+      "objective": "İngilizce sesletim mantığını kavramak ve en temel kibarlık/selamlaşma kalıplarını edinmek.",
+      "vocabulary": [
+        {
+          "term": "Hello / Hi",
+          "translation": "Merhaba",
+          "example": "Hello, how are you?"
+        },
+        {
+          "term": "Good morning",
+          "translation": "Günaydın",
+          "example": "Good morning, teacher."
+        },
+        {
+          "term": "Good evening",
+          "translation": "İyi akşamlar",
+          "example": "Good evening, everyone."
+        },
+        {
+          "term": "Goodbye / Bye",
+          "translation": "Hoşça kal",
+          "example": "Goodbye, see you tomorrow."
+        },
+        {
+          "term": "Please",
+          "translation": "Lütfen",
+          "example": "Water, please."
+        },
+        {
+          "term": "Thank you",
+          "translation": "Teşekkürler",
+          "example": "Thank you very much."
+        },
+        {
+          "term": "Excuse me",
+          "translation": "Afedersiniz",
+          "example": "Excuse me, where is the door?"
+        }
+      ],
+      "grammar_pill": {
+        "title": "Cümle Dizilimi (SVO)",
+        "explanation": "İngilizcede temel cümle Özne + Yüklem + Nesne (Subject + Verb + Object) sırasıyla kurulur.",
+        "rules": [
+          "Cümleler büyük harfle başlar.",
+          "Özel isimler her zaman büyük harfle yazılır."
+        ]
+      },
+      "exam_simulation": {
+        "reading": "— Good morning, Anna.\n— Good morning, Tom. How are you?\n— I am fine, thanks.",
+        "questions": [
+          {
+            "q": "What do they say in the morning?",
+            "options": [
+              "Goodbye",
+              "Good morning",
+              "Good night"
+            ],
+            "answer": "Good morning"
+          }
+        ],
+        "writing_task": "Translate 'Merhaba, benim adım Ali' into English."
+      }
+    },
+    {
+      "module_id": 2,
+      "title": "Kimlik, Tanışma ve 'To Be' Fiili (Am/Is/Are)",
+      "objective": "Kendini ve başkalarını tanıtmak, meslekleri ve ülkeleri ifade edebilmek.",
+      "vocabulary": [
+        {
+          "term": "Teacher",
+          "translation": "Öğretmen",
+          "example": "I am a teacher."
+        },
+        {
+          "term": "Student",
+          "translation": "Öğrenci",
+          "example": "You are a student."
+        },
+        {
+          "term": "Doctor",
+          "translation": "Doktor",
+          "example": "He is a doctor."
+        },
+        {
+          "term": "Engineer",
+          "translation": "Mühendis",
+          "example": "She is an engineer."
+        },
+        {
+          "term": "Happy",
+          "translation": "Mutlu",
+          "example": "I am happy today."
+        },
+        {
+          "term": "Tired",
+          "translation": "Yorgun",
+          "example": "They are tired."
+        }
+      ],
+      "grammar_pill": {
+        "title": "To Be (Am / Is / Are)",
+        "explanation": "Özneye göre durum bildiren 'olmak' fiilidir.",
+        "rules": [
+          "I am (am not)",
+          "He / She / It is (is not / isn't)",
+          "You / We / They are (are not / aren't)"
+        ]
+      },
+      "exam_simulation": {
+        "reading": "John is an engineer from the UK. He is 30 years old. He is happy.",
+        "questions": [
+          {
+            "q": "John is a doctor.",
+            "options": [
+              "True",
+              "False"
+            ],
+            "answer": "False"
+          }
+        ],
+        "writing_task": "Introduce yourself in 3 sentences using 'To Be'."
+      }
+    },
+    {
+      "module_id": 3,
+      "title": "Çevremizdeki Nesneler (This/That/These/Those & Artikeller)",
+      "objective": "Yakındaki ve uzaktaki nesneleri tekil/çoğul olarak doğru işaret etmek.",
+      "vocabulary": [
+        {
+          "term": "Book",
+          "translation": "Kitap",
+          "example": "This is a book."
+        },
+        {
+          "term": "Pen",
+          "translation": "Kalem",
+          "example": "That is a red pen."
+        },
+        {
+          "term": "Table",
+          "translation": "Masa",
+          "example": "The table is clean."
+        },
+        {
+          "term": "Chair",
+          "translation": "Sandalye",
+          "example": "These are chairs."
+        },
+        {
+          "term": "Door",
+          "translation": "Kapı",
+          "example": "Open the door."
+        },
+        {
+          "term": "Window",
+          "translation": "Pencere",
+          "example": "Close the window."
+        }
+      ],
+      "grammar_pill": {
+        "title": "İşaret Zamirleri ve Artikeller",
+        "explanation": "Nesnelerin konumunu ve belirliliğini belirtir.",
+        "rules": [
+          "This (Yakın tekil), That (Uzak tekil)",
+          "These (Yakın çoğul), Those (Uzak çoğul)",
+          "A / An: Tekil isimlerin önünde 'bir' anlamı katar (Sesliler için An)."
+        ]
+      },
+      "exam_simulation": {
+        "reading": "Look at the picture (distant plural chairs). ____ are chairs.",
+        "questions": [
+          {
+            "q": "Select the correct pronoun:",
+            "options": [
+              "This",
+              "That",
+              "These",
+              "Those"
+            ],
+            "answer": "Those"
+          }
+        ],
+        "writing_task": "Correct the sentence: 'Give me a apple, please.'"
+      }
+    },
+    {
+      "module_id": 4,
+      "title": "Sahiplik, Aile ve 'Have/Has Got'",
+      "objective": "Aile bağlarını kurmak, kişisel eşyaları ve sahiplikleri ifade etmek.",
+      "vocabulary": [
+        {
+          "term": "Mother",
+          "translation": "Anne",
+          "example": "This is my mother."
+        },
+        {
+          "term": "Father",
+          "translation": "Baba",
+          "example": "My father is a doctor."
+        },
+        {
+          "term": "Brother",
+          "translation": "Erkek kardeş",
+          "example": "His brother is tall."
+        },
+        {
+          "term": "Sister",
+          "translation": "Kız kardeş",
+          "example": "Her sister is a student."
+        },
+        {
+          "term": "Car",
+          "translation": "Araba",
+          "example": "I have got a car."
+        },
+        {
+          "term": "House",
+          "translation": "Ev",
+          "example": "They have got a big house."
+        }
+      ],
+      "grammar_pill": {
+        "title": "İyelik Sıfatları ve Have/Has Got",
+        "explanation": "Sahiplik ilişkilerini kurar.",
+        "rules": [
+          "My, Your, His, Her, Its, Our, Their",
+          "I/You/We/They have got (haven't got)",
+          "He/She/It has got (hasn't got)"
+        ]
+      },
+      "exam_simulation": {
+        "reading": "Mary has got a brother and a cat. Her cat is black.",
+        "questions": [
+          {
+            "q": "What color is Mary's cat?",
+            "options": [
+              "White",
+              "Black",
+              "Brown"
+            ],
+            "answer": "Black"
+          }
+        ],
+        "writing_task": "Transform 'He has a car' into 'Have/Has got' form."
+      }
+    },
+    {
+      "module_id": 5,
+      "title": "Zaman, Günler, Takvim ve Saatler",
+      "objective": "Günleri, ayları, mevsimleri ve saatleri doğru kalıplarla sormak ve söylemek.",
+      "vocabulary": [
+        {
+          "term": "Monday / Friday",
+          "translation": "Pazartesi / Cuma",
+          "example": "English class is on Monday."
+        },
+        {
+          "term": "January / July",
+          "translation": "Ocak / Temmuz",
+          "example": "My birthday is in July."
+        },
+        {
+          "term": "Summer / Winter",
+          "translation": "Yaz / Kış",
+          "example": "I like summer."
+        },
+        {
+          "term": "Morning / Night",
+          "translation": "Sabah / Gece",
+          "example": "Good night."
+        }
+      ],
+      "grammar_pill": {
+        "title": "Saatler ve Zaman Edatları",
+        "explanation": "Zaman bildirimleri ve edatları.",
+        "rules": [
+          "What time is it? -> It is half past two.",
+          "In: Aylar, yıllar, mevsimler, günün bölümleri (in July, in the morning)",
+          "On: Günler ve tarihler (on Monday)",
+          "At: Kesin saatler (at 5 o'clock)"
+        ]
+      },
+      "exam_simulation": {
+        "reading": "My English class is on Monday at 10 AM.",
+        "questions": [
+          {
+            "q": "Fill in the blank: 'My class is ___ Monday ___ 10 AM.'",
+            "options": [
+              "on / at",
+              "in / on",
+              "at / in"
+            ],
+            "answer": "on / at"
+          }
+        ],
+        "writing_task": "Write the digital time '03:45' in English words."
+      }
+    },
+    {
+      "module_id": 6,
+      "title": "Mekanlar, Şehir ve Konum Edatları (Prepositions of Place)",
+      "objective": "Şehirdeki yerleri tanımak, nesne ve kişilerin konumunu harita veya oda üzerinde tarif edebilmek.",
+      "vocabulary": [
+        {
+          "term": "Hospital",
+          "translation": "Hastane",
+          "example": "The hospital is big."
+        },
+        {
+          "term": "School",
+          "translation": "Okul",
+          "example": "Children are at school."
+        },
+        {
+          "term": "Supermarket",
+          "translation": "Süpermarket",
+          "example": "Let's go to the supermarket."
+        },
+        {
+          "term": "In / On / Under",
+          "translation": "İçinde / Üstünde / Altında",
+          "example": "The cat is under the table."
+        },
+        {
+          "term": "Next to / Behind",
+          "translation": "Yanında / Arkasında",
+          "example": "The bank is next to the post office."
+        }
+      ],
+      "grammar_pill": {
+        "title": "Konum Bildirme",
+        "explanation": "Nesne ve mekanların yerini tarif etme.",
+        "rules": [
+          "Özne + To Be + Edat + Yer (The book is on the desk.)",
+          "Where is...? kalıbı soru sormak için kullanılır."
+        ]
+      },
+      "exam_simulation": {
+        "reading": "The bank is next to the supermarket, and the post office is behind the bank.",
+        "questions": [
+          {
+            "q": "Where is the post office?",
+            "options": [
+              "Next to the bank",
+              "Behind the bank",
+              "Inside the supermarket"
+            ],
+            "answer": "Behind the bank"
+          }
+        ],
+        "writing_task": "Write a 2-sentence description of where your pen is."
+      }
+    },
+    {
+      "module_id": 7,
+      "title": "Günlük Yaşam ve Rutinler (Present Simple Tense)",
+      "objective": "Alışkanlıkları, rutinleri ve genel geçer durumları ifade etmek.",
+      "vocabulary": [
+        {
+          "term": "Wake up",
+          "translation": "Uyanmak",
+          "example": "I wake up at 7 AM."
+        },
+        {
+          "term": "Eat / Drink",
+          "translation": "Yemek / İçmek",
+          "example": "He drinks coffee."
+        },
+        {
+          "term": "Work",
+          "translation": "Çalışmak",
+          "example": "She works in an office."
+        },
+        {
+          "term": "Always / Sometimes / Never",
+          "translation": "Her zaman / Bazen / Asla",
+          "example": "I always speak English."
+        }
+      ],
+      "grammar_pill": {
+        "title": "Present Simple Tense (Geniş Zaman)",
+        "explanation": "Tekrarlanan eylemleri ve genel durumları açıklar.",
+        "rules": [
+          "I/You/We/They -> Fiil yalın (I work)",
+          "He/She/It -> Fiil -s alarak çekimlenir (He works)",
+          "Olumsuz: don't / doesn't, Soru: Do / Does"
+        ]
+      },
+      "exam_simulation": {
+        "reading": "Tom wakes up at 7 AM. He eats breakfast and goes to work by bus.",
+        "questions": [
+          {
+            "q": "Find the error: 'He like milk.'",
+            "options": [
+              "He likes milk.",
+              "He liking milk.",
+              "He liked milk."
+            ],
+            "answer": "He likes milk."
+          }
+        ],
+        "writing_task": "Write 3 sentences about your daily routine."
+      }
+    },
+    {
+      "module_id": 8,
+      "title": "Yetenekler ve İzinler (Can / Can't)",
+      "objective": "Fiziksel ve zihinsel becerileri, yapabildiği/yapamadığı işleri aktarmak.",
+      "vocabulary": [
+        {
+          "term": "Swim",
+          "translation": "Yüzmek",
+          "example": "I can swim in the sea."
+        },
+        {
+          "term": "Cook",
+          "translation": "Yemek yapmak",
+          "example": "She can cook well."
+        },
+        {
+          "term": "Drive",
+          "translation": "Araba kullanmak",
+          "example": "He can't drive a truck."
+        },
+        {
+          "term": "Play the guitar",
+          "translation": "Gitar çalmak",
+          "example": "Can you play the guitar?"
+        }
+      ],
+      "grammar_pill": {
+        "title": "Can / Can't",
+        "explanation": "Yetenek ve imkan bildirme.",
+        "rules": [
+          "Tüm öznelerde 'can' değişmez ve fiil yalın gelir.",
+          "Olumsuzu 'can't (cannot)' şeklindedir.",
+          "Soru cümlesinde başa gelir: Can you swim?"
+        ]
+      },
+      "exam_simulation": {
+        "reading": "Sarah can speak English and French, but she can't speak Spanish.",
+        "questions": [
+          {
+            "q": "Can Sarah speak Spanish?",
+            "options": [
+              "Yes, she can.",
+              "No, she can't.",
+              "Only French."
+            ],
+            "answer": "No, she can't."
+          }
+        ],
+        "writing_task": "Write 2 things you can do and 1 thing you can't do."
+      }
+    },
+    {
+      "module_id": 9,
+      "title": "Anlık Eylemler (Present Continuous Tense)",
+      "objective": "'Şu anda, bu konuşma anında' gerçekleşen olayları tasvir edebilmek.",
+      "vocabulary": [
+        {
+          "term": "Read",
+          "translation": "Okumak",
+          "example": "I am reading a book."
+        },
+        {
+          "term": "Write",
+          "translation": "Yazmak",
+          "example": "She is writing an email."
+        },
+        {
+          "term": "Watch",
+          "translation": "İzlemek",
+          "example": "They are watching TV."
+        },
+        {
+          "term": "Now / At the moment",
+          "translation": "Şimdi / Şu anda",
+          "example": "He is sleeping now."
+        }
+      ],
+      "grammar_pill": {
+        "title": "Present Continuous Tense",
+        "explanation": "Şu anda devam eden eylemler.",
+        "rules": [
+          "Formül: Özne + Am / Is / Are + Fiil(-ing)",
+          "write -> writing (e düşer -ing gelir)"
+        ]
+      },
+      "exam_simulation": {
+        "reading": "Look! The baby is sleeping in the room.",
+        "questions": [
+          {
+            "q": "Complete: 'Look! The baby ____.'",
+            "options": [
+              "sleep",
+              "is sleeping",
+              "slept"
+            ],
+            "answer": "is sleeping"
+          }
+        ],
+        "writing_task": "Write what you are doing right now in one sentence."
+      }
+    },
+    {
+      "module_id": 10,
+      "title": "Alışveriş, Sayılar ve Miktar (Numbers & Shopping)",
+      "objective": "1'den 1000'e kadar sayıları kullanmak, fiyat sormak, markette veya kafede alışveriş yapmak.",
+      "vocabulary": [
+        {
+          "term": "Expensive / Cheap",
+          "translation": "Pahalı / Ucuz",
+          "example": "This watch is expensive."
+        },
+        {
+          "term": "Money",
+          "translation": "Para",
+          "example": "I have got some money."
+        },
+        {
+          "term": "Water / Apple / Coffee",
+          "translation": "Su / Elma / Kahve",
+          "example": "I want a cup of coffee."
+        }
+      ],
+      "grammar_pill": {
+        "title": "Fiyat Sorma ve İstek Kalıpları",
+        "explanation": "Alışveriş diyalogları kurma.",
+        "rules": [
+          "How much is this? (Tekil) / How much are these? (Çoğul)",
+          "I would like... / Can I have...?"
+        ]
+      },
+      "exam_simulation": {
+        "reading": "Customer: How much is this apple?\nSeller: It is 2 dollars.",
+        "questions": [
+          {
+            "q": "How much is the apple?",
+            "options": [
+              "1 dollar",
+              "2 dollars",
+              "5 dollars"
+            ],
+            "answer": "2 dollars"
+          }
+        ],
+        "writing_task": "Ask the price of a jacket in English."
+      }
+    },
+    {
+      "module_id": 11,
+      "title": "Geçmişe İlk Adım (Was / Were & Simple Past Giriş)",
+      "objective": "Geçmişteki durumları, yerleri ve 'dün/geçen hafta' gibi kavramları ifade edebilmek.",
+      "vocabulary": [
+        {
+          "term": "Yesterday",
+          "translation": "Dün",
+          "example": "I was at home yesterday."
+        },
+        {
+          "term": "Last night / Last week",
+          "translation": "Dün gece / Geçen hafta",
+          "example": "We were at the cinema last night."
+        },
+        {
+          "term": "At home / At school",
+          "translation": "Evde / Okulda",
+          "example": "Where were you?"
+        }
+      ],
+      "grammar_pill": {
+        "title": "To Be Fiilinin Geçmiş Hali (Was / Were)",
+        "explanation": "Geçmişteki durum ve konumları belirtir.",
+        "rules": [
+          "I / He / She / It -> Was (wasn't)",
+          "You / We / They -> Were (weren't)"
+        ]
+      },
+      "exam_simulation": {
+        "reading": "We were at the cinema last night. The movie was great.",
+        "questions": [
+          {
+            "q": "Fill in the blank: 'We ____ at the cinema last night.'",
+            "options": [
+              "was",
+              "were",
+              "are"
+            ],
+            "answer": "were"
+          }
+        ],
+        "writing_task": "Write where you were yesterday."
+      }
+    },
+    {
+      "module_id": 12,
+      "title": "A1 Capstone - Genel Sınav ve Gerçek Hayat Senaryoları",
+      "objective": "Tüm 11 modüldeki yapıları harmanlayarak uluslararası sınav formatında (KET tarzı) kapsamlı bir simülasyonu tamamlamak.",
+      "vocabulary": [
+        {
+          "term": "Airport / Hotel / Restaurant",
+          "translation": "Havaalanı / Otel / Restoran",
+          "example": "Check-in at the hotel."
+        },
+        {
+          "term": "Who / What / Where / When / Why / How",
+          "translation": "Soru Kelimeleri",
+          "example": "Where are you going?"
+        }
+      ],
+      "grammar_pill": {
+        "title": "Genel Soru Kelimeleri (Wh- Questions)",
+        "explanation": "Bilgi istemek için kullanılan temel soru kalıpları.",
+        "rules": [
+          "Who (Kim), What (Ne), Where (Nerede), When (Ne zaman), Why (Neden), How (Nasıl)."
+        ]
+      },
+      "exam_simulation": {
+        "reading": "KET Style Reading: Read short notices and match with correct meanings.",
+        "questions": [
+          {
+            "q": "What does 'DO NOT TOUCH' mean?",
+            "options": [
+              "You can touch it.",
+              "Do not touch it.",
+              "Touch it slowly."
+            ],
+            "answer": "Do not touch it."
+          }
+        ],
+        "writing_task": "Fill in a mock registration form with Name, Age, Nationality, and Occupation."
+      }
+    }
+  ]
+}
