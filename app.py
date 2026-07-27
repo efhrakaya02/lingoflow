@@ -1211,21 +1211,31 @@ else:
 
       st.markdown("---")
 
-      # --- BÖLÜM 2: LISTENING COMPREHENSION ---
+      # --- BÖLÜM 2: LISTENING COMPREHENSION (SADECE SES KAYDI) ---
       st.markdown(
           '<div class="exam-section-card"><h3>🎧 Bölüm 2: Dinleme ve Anlama'
-          ' (Listening Comprehension Simulation)</h3><p>Aşağıdaki diyalog'
-          ' transkriptini okuyarak/dinleyerek soruyu yanıtlayın:</p></div>',
+          ' (Listening Comprehension)</h3><p>Lütfen aşağıdaki ses kaydını'
+          ' dikkatle dinleyiniz (Metin gösterilmez).</p></div>',
           unsafe_allow_html=True,
       )
 
-      st.code(
-          "Transcript:\n- Clerk: Hello, can I help you?\n- Customer: Yes,"
-          " please. How much is this blue shirt?\n- Clerk: It is 25"
-          " pounds.\n- Customer: Great, I will take it. Can I pay by credit"
-          " card?\n- Clerk: Sure, enter your PIN here, please.",
-          language="text",
-      )
+      mock_audio_html = """
+        <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; border: 1px solid #d1d5db; margin-bottom: 20px; text-align: center;">
+            <p style="margin: 0 0 10px 0; font-weight: bold; color: #1e3a8a; font-size: 16px;">🎧 Resmi Sınav Ses Kaydı (Audio Stream)</p>
+            <p style="margin: 0 0 15px 0; font-size: 13px; color: #6b7280;">Diyaloğu dinlemek için aşağıdaki oynat butonuna tıklayın:</p>
+            <button type="button" onclick="playMockAudio()" style="background-color: #1e3a8a; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 14px;">🔊 Ses Kaydını Çal (Play Audio)</button>
+        </div>
+        <script>
+        function playMockAudio() {
+            const text = "Clerk: Hello, can I help you? Customer: Yes, please. How much is this blue shirt? Clerk: It is 25 pounds. Customer: Great, I will take it. Can I pay by credit card? Clerk: Sure, enter your PIN here, please.";
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'en-US';
+            utterance.rate = 0.9;
+            window.speechSynthesis.speak(utterance);
+        }
+        </script>
+        """
+      st.components.v1.html(mock_audio_html, height=140)
 
       p2_q1 = st.radio(
           "7. Müşteri satın almak istediği mavi gömlek için ne kadar ödeyecektir"
@@ -1684,31 +1694,34 @@ else:
         listening_text = exam.get(
             "reading", "Audio script unavailable for this module."
         )
-        st.text_area(
-            "Dinleme Metni / Transkript:",
-            value=listening_text,
-            height=100,
-            disabled=True,
+
+        st.info(
+            "📢 **Dinleme Sınavı Kuralları:** Bu bölümde yazılı metin"
+            " gösterilmemektedir. Sadece ses kaydını dinleyerek soruları"
+            " yanıtlayınız."
         )
 
         tts_html = f"""
-        <div style="margin-bottom: 15px;">
-            <button onclick="speakText()" style="background-color: #0066cc; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold;">🔊 Metni Sesli Dinle (Play Audio)</button>
+        <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; border: 1px solid #d1d5db; margin-bottom: 20px; text-align: center;">
+            <p style="margin: 0 0 10px 0; font-weight: bold; color: #0066cc; font-size: 16px;">🎧 Modül Ses Kaydı (Audio Player)</p>
+            <p style="margin: 0 0 15px 0; font-size: 13px; color: #6b7280;">Diyaloğu dinlemek için butona tıklayın:</p>
+            <button type="button" onclick="speakText()" style="background-color: #0066cc; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 14px;">🔊 Ses Kaydını Dinle (Play Audio)</button>
         </div>
         <script>
         function speakText() {{
             const text = {json.dumps(listening_text)};
             const utterance = new SpeechSynthesisUtterance(text);
             utterance.lang = 'en-US';
+            utterance.rate = 0.9;
             window.speechSynthesis.speak(utterance);
         }}
         </script>
         """
-        st.components.v1.html(tts_html, height=60)
+        st.components.v1.html(tts_html, height=140)
 
         st.markdown("### 🎧 Dinleme Anlama Kontrolü")
         listening_q = st.radio(
-            "Dinlediğiniz veya okuduğunuz diyalog/metne göre ana tema nedir?",
+            "Dinlediğiniz diyalog/metne göre ana tema nedir?",
             [
                 "Günlük rutinler ve temel tanışma kalıpları",
                 "İleri düzey iş hukuku ve sözleşmeler",
