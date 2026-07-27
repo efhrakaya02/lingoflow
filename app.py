@@ -3,7 +3,7 @@ from groq import Groq
 import streamlit as st
 
 st.set_page_config(
-    page_title="LingoFlow Pro - JSON Destekli Dil Akademisi",
+    page_title="LingoFlow Pro - Detaylı Bölüm Karnesi & Portre",
     page_icon="🎓",
     layout="wide",
 )
@@ -19,7 +19,7 @@ if not api_key:
 
 client = Groq(api_key=api_key)
 
-# --- MÜFREDAT JSON VERİ TABANI (A1 VE DİĞER SEVİYELER) ---
+# --- MÜFREDAT JSON VERİ TABANI ---
 CURRICULUM_JSON = """
 {
   "A1": [
@@ -161,9 +161,7 @@ CURRICULUM_JSON = """
 }
 """
 
-# JSON verisini Python sözlüğüne parse etme
 CURRICULUM_DATA = json.loads(CURRICULUM_JSON)
-
 
 # --- OTURUM DURUMU (STATE) BAŞLANGIÇLARI ---
 if "stage" not in st.session_state:
@@ -201,14 +199,13 @@ if "quiz_feedback" not in st.session_state:
 if "writing_feedback" not in st.session_state:
   st.session_state["writing_feedback"] = ""
 
-
 # --- AŞAMA 1: TANIŞMA VE DİL SEÇİMİ ---
 if st.session_state["stage"] == "welcome":
-  st.title("🎓 LingoFlow Pro - JSON Destekli Dil Akademisi")
+  st.title("🎓 LingoFlow Pro - Detaylı Bölüm Karnesi & Portre")
   st.markdown(
-      "10 soruluk kapsamlı analiz sınavımızla dil seviyenizi ve öğrenme"
-      " profilinizi belirliyor; JSON tabanlı özelleştirilmiş müfredatınızı"
-      " yüklüyoruz. Her cevap anında yapay zeka tarafından değerlendirilir."
+      "10 soruluk kapsamlı analiz sınavımızla dil seviyenizi belirliyor;"
+      " karnelerde detaylı bölüm portreleri, kelime özetleri ve dil bilgisi"
+      " terimleri sunan modüllerimizi yüklüyoruz."
   )
 
   col1, col2 = st.columns(2)
@@ -230,15 +227,13 @@ if st.session_state["stage"] == "welcome":
     else:
       st.error("Lütfen devam etmek için adınızı girin.")
 
-# --- AŞAMA 2: 10 SORULUK ADIM ADIM SEVİYE VE KİŞİLİK ANALİZİ ---
+# --- AŞAMA 2: 10 SORULUK ANALİZ SINAVI ---
 elif st.session_state["stage"] == "placement":
   step = st.session_state["placement_step"]
   st.title(
       f"🎯 {st.session_state['user_name']} - Seviye ve Kişilik Analiz Sınavı"
   )
-  st.progress(
-      step / 10, text=f"Analiz İlerlemesi: Soru {step} / 10 (JSON Entegreli)"
-  )
+  st.progress(step / 10, text=f"Analiz İlerlemesi: Soru {step} / 10")
 
   question_data = {
       1: {
@@ -324,7 +319,6 @@ elif st.session_state["stage"] == "placement":
   }
 
   current_q = question_data[step]
-
   st.markdown(f"### {current_q['q']}")
   st.caption("Lütfen size en uygun seçeneği işaretleyin.")
 
@@ -355,23 +349,18 @@ elif st.session_state["stage"] == "placement":
         else:
           st.warning("Lütfen ilerlemek için bir seçenek işaretleyin.")
     else:
-      if st.button(
-          "Analizi Tamamla ve JSON Müfredatımı Yükle 🎯", type="primary"
-      ):
+      if st.button("Analizi Tamamla ve Müfredatı Yükle 🎯", type="primary"):
         if selected_ans is not None:
           st.session_state["placement_answers"][step] = selected_ans
-
           answers_summary = "\n".join(
               f"Soru {k}: {v}"
               for k, v in st.session_state["placement_answers"].items()
           )
 
           analysis_prompt = (
-              "Analyze the following 10 placement and personality test answers"
-              " for a language learner. Determine their exact CEFR level (A1,"
-              " A2, B1, or B2) and summarize their psychological/learning"
-              " personality profile. Provide the output in Turkish in this"
-              " exact format:\nSEVIYE: [Level]\nPROFIL: [Profile"
+              "Analyze the following 10 placement test answers. Determine"
+              " CEFR level (A1, A2, B1, or B2) and learning profile. Output in"
+              " Turkish in this exact format:\nSEVIYE: [Level]\nPROFIL: [Profile"
               " description]\n\nAnswers:\n" + answers_summary
           )
 
@@ -409,18 +398,12 @@ elif st.session_state["stage"] == "placement":
         else:
           st.warning("Lütfen son soruyu da yanıtlayın.")
 
-# --- AŞAMA 3: HİKAYE, HEDEF VE SEVİYE DÜZELTME (OVERRIDE) ---
+# --- AŞAMA 3: HEDEF VE SEVİYE ONAYI ---
 elif st.session_state["stage"] == "goal_setup":
   st.title(f"🌟 {st.session_state['user_name']}, Kişisel Hedefini Tanımla")
   st.success(
-      f"🔍 **JSON Analiz Sonucu:** Seviyeniz **{st.session_state['current_level']}**"
-      f" | Profil: *{st.session_state['personality_profile']}*"
-  )
-
-  st.markdown(
-      "💡 *Not: Analiz sonucunda belirlenen seviyeyi dilediğiniz gibi"
-      " değiştirebilir; seçtiğiniz seviyeye uygun JSON müfredatının"
-      " yüklenmesini sağlayabilirsiniz.*"
+      f"🔍 **Analiz Sonucu:** Seviyeniz **{st.session_state['current_level']}** |"
+      f" Profil: *{st.session_state['personality_profile']}*"
   )
 
   with st.form("story_goal_form"):
@@ -448,38 +431,32 @@ elif st.session_state["stage"] == "goal_setup":
     )
     dream_input = st.text_area(
         "Hedefine ulaştığında ilk gerçekleştireceğin büyük şey nedir?",
-        placeholder=(
-            "Örn: Uluslararası bir toplantıda akıcı bir şekilde projemi"
-            " savunmak..."
-        ),
+        placeholder="Örn: Uluslararası bir toplantıda akıcı konuşmak...",
     )
 
-    goal_submitted = st.form_submit_button(
-        "JSON Müfredatımı Aktive Et ve Başla 🚀"
-    )
+    goal_submitted = st.form_submit_button("Müfredatımı Aktive Et ve Başla 🚀")
     if goal_submitted:
       st.session_state["current_level"] = selected_level_override
       st.session_state["user_goal"] = goal_choice
       st.session_state["user_dream"] = (
           dream_input if dream_input.strip() else "Kendi başarı hikayesini yazmak"
       )
-
-      # JSON veritabanından seçilen seviyenin modüllerini çek ve ata
       lvl = st.session_state["current_level"]
-      st.session_state["modules"] = list(CURRICULUM_DATA.get(lvl, CURRICULUM_DATA["A1"]))
-
+      st.session_state["modules"] = list(
+          CURRICULUM_DATA.get(lvl, CURRICULUM_DATA["A1"])
+      )
       st.session_state["stage"] = "dashboard"
       st.rerun()
 
 # --- AŞAMA 4: DAHİLİ KURS PANELI (DASHBOARD) ---
 elif st.session_state["stage"] == "dashboard":
-  st.title(f"🗺️ {st.session_state['user_name']} - JSON Müfredat Paneli")
+  st.title(f"🗺️ {st.session_state['user_name']} - Eğitim Paneli")
   st.success(
       f"🎯 **Aktif Seviye:** {st.session_state['current_level']} | 🎯"
       f" **Hedef:** {st.session_state['user_goal']}"
   )
 
-  st.markdown("### 📚 JSON Dosyasından Yüklenen Yoğun Eğitim Modülleriniz")
+  st.markdown("### 📚 Eğitim Modülleriniz")
 
   for idx, mod in enumerate(st.session_state["modules"]):
     col1, col2, col3 = st.columns([3, 1, 1])
@@ -512,7 +489,7 @@ elif st.session_state["stage"] == "dashboard":
         st.info("🔒 Kilitli")
     st.markdown("---")
 
-# --- AŞAMA 5: KAPSAMLI DERS İŞLEYİŞİ (LEARNING STAGE) ---
+# --- AŞAMA 5: KAPSAMLI DERS İŞLEYİŞİ ---
 elif st.session_state["stage"] == "learning":
   mod_idx = st.session_state["current_module_idx"]
   active_mod = st.session_state["modules"][mod_idx]
@@ -522,20 +499,14 @@ elif st.session_state["stage"] == "learning":
   st.progress(
       step / 4,
       text=(
-          f"Eğitim İlerlemesi: Adım {step} / 4 ("
-          "1:Okuma->2:Kelime/Kalıp->3:Test ve Anlık Değerlendirme->4:Yazma ve"
-          " Hata Düzeltme)"
+          f"Eğitim İlerlemesi: Adım {step} / 4 (1:Okuma -> 2:Kelime/Kalıp ->"
+          " 3:Test -> 4:Yazma & Tamamlama)"
       ),
   )
 
-  # --- ADIM 1: ZENGİN OKUMA VE HİKAYE METNİ ---
+  # Adım 1: Okuma
   if step == 1:
     st.subheader("📜 1. Bölüm: Bağlamsal Okuma ve Hikaye Analizi")
-    st.markdown(
-        "JSON modül içeriğine ve kişisel profilinize uygun hazırlanmış ders"
-        " metni:"
-    )
-
     if "reading_content" not in st.session_state:
       prompt_read = (
           f"Create a rich, professional, 2-paragraph educational reading"
@@ -564,13 +535,9 @@ elif st.session_state["stage"] == "learning":
       st.session_state["lesson_step"] = 2
       st.rerun()
 
-  # --- ADIM 2: KELİME VE CÜMLE KALIBI ANALİZİ ---
+  # Adım 2: Kelime ve Kalıplar
   elif step == 2:
     st.subheader("🔑 2. Bölüm: Kritik Kelimeler ve Cümle Kalıpları")
-    st.markdown(
-        "Bu modülde ustalaşmanız gereken temel yapı taşları ve kalıplar:"
-    )
-
     if "vocab_content" not in st.session_state:
       prompt_vocab = (
           f"List 5 essential vocabulary words and 3 key sentence patterns from"
@@ -602,23 +569,19 @@ elif st.session_state["stage"] == "learning":
         st.session_state["lesson_step"] = 3
         st.rerun()
 
-  # --- ADIM 3: İNTERAKTİF TEST VE ANLIK DEĞERLENDİRME ---
+  # Adım 3: Test
   elif step == 3:
     st.subheader(
         "🧩 3. Bölüm: Bilgiyi Pekiştirme ve Anlık Yapay Zeka Değerlendirmesi"
     )
-    st.markdown(
-        "Modül kazanımlarını test edin, cevaplarınız anında değerlendirilsin."
-    )
-
     if "quiz_content" not in st.session_state:
       prompt_quiz = (
           f"Create 2 high-quality multiple choice or fill-in-the-blank"
           f" educational exercises related to '{active_mod['title']}' in"
           f" {st.session_state['target_lang']} for level"
           f" {st.session_state['current_level']}. Provide helpful hints in"
-          " Turkish, 4 options (A, B, C, D) per question, and explicitly"
-          " include 'Dogru Cevaplar: ...' at the very end."
+          " Turkish, 4 options (A, B, C, D), and 'Dogru Cevaplar: ...' at the"
+          " end."
       )
       try:
         res = client.chat.completions.create(
@@ -635,14 +598,12 @@ elif st.session_state["stage"] == "learning":
         "Cevaplarınızı giriniz (Örn: 1-A, 2-C):", key="quiz_input_field"
     )
 
-    if st.button("Cevaplarımı Değerlendir ve Hataları Düzelt 🔍"):
+    if st.button("Cevaplarımı Değerlendir 🔍"):
       if user_ans_q3.strip():
         eval_prompt = (
             f"Evaluate the user's quiz answers: '{user_ans_q3}' against the"
-            f" following quiz content:\n{st.session_state['quiz_content']}\nProvide"
-            " a clear, encouraging evaluation in Turkish. Point out which ones"
-            " are correct, which ones are incorrect, explain why, and provide"
-            " corrections for any mistakes."
+            f" quiz content:\n{st.session_state['quiz_content']}\nProvide"
+            " encouragement and explanations in Turkish."
         )
         try:
           res = client.chat.completions.create(
@@ -652,11 +613,9 @@ elif st.session_state["stage"] == "learning":
           )
           st.session_state["quiz_feedback"] = res.choices[0].message.content
         except Exception:
-          st.session_state["quiz_feedback"] = (
-              "Değerlendirme yapılırken hata oluştu."
-          )
+          st.session_state["quiz_feedback"] = "Değerlendirme hatası."
       else:
-        st.warning("Lütfen değerlendirilmesi için cevaplarınızı yazın.")
+        st.warning("Lütfen cevaplarınızı yazın.")
 
     if st.session_state["quiz_feedback"]:
       st.info(st.session_state["quiz_feedback"])
@@ -675,15 +634,12 @@ elif st.session_state["stage"] == "learning":
         else:
           st.warning("Lütfen test cevaplarınızı giriniz.")
 
-  # --- ADIM 4: YAZMA VE ANLIK DÜZELTME PRATİĞİ ---
+  # Adım 4: Yazma ve Rapor Oluşturma
   elif step == 4:
-    st.subheader(
-        "✍️ 4. Bölüm: Aktif Yazma ve Anlık Yapay Zeka Hata Düzeltme"
-    )
+    st.subheader("✍️ 4. Bölüm: Aktif Yazma ve Modül Kapanışı")
     st.markdown(
-        f"Bu modülde öğrendiğiniz kelime ve kalıplarla, hayalinize ('"
-        f"{st.session_state['user_dream']}') atıfta bulunan en az 2 cümlelik"
-        " kendi cümlenizi yazın. Yazdığınız metin anında taranıp düzeltilecektir:"
+        f"Bu modülde öğrendiklerinizle hayalinize ('{st.session_state['user_dream']}')"
+        " atıfta bulunan kendi cümlenizi yazın:"
     )
 
     user_writing = st.text_area(
@@ -694,14 +650,12 @@ elif st.session_state["stage"] == "learning":
         key="writing_input_field",
     )
 
-    if st.button("Yazımı Değerlendir ve Eksikleri Düzelt 🔍"):
+    if st.button("Yazımı Değerlendir 🔍"):
       if user_writing.strip():
         write_eval_prompt = (
-            f"Evaluate the following user-written text in"
-            f" {st.session_state['target_lang']}: '{user_writing}'. Provide"
-            " constructive feedback in Turkish, point out grammatical, spelling,"
-            " or vocabulary errors, explain missing points, and provide fully"
-            " corrected/improved professional versions of the sentences."
+            f"Evaluate the user text in {st.session_state['target_lang']}:"
+            f" '{user_writing}'. Give constructive feedback in Turkish and"
+            " corrected versions."
         )
         try:
           res = client.chat.completions.create(
@@ -713,7 +667,7 @@ elif st.session_state["stage"] == "learning":
         except Exception:
           st.session_state["writing_feedback"] = "Yazı değerlendirilemedi."
       else:
-        st.warning("Lütfen değerlendirilecek bir metin yazın.")
+        st.warning("Lütfen bir metin yazın.")
 
     if st.session_state["writing_feedback"]:
       st.success(st.session_state["writing_feedback"])
@@ -722,11 +676,56 @@ elif st.session_state["stage"] == "learning":
 
     if st.button("Dersi Tamamla ve Bölüm Karnesini Gör 🏆", type="primary"):
       if user_writing.strip():
+        with st.spinner(
+            "Bölümün portresi, öğrenilen kelime ve dil bilgisi detayları"
+            " hazırlanıyor..."
+        ):
+          report_prompt = (
+              f"Generate a comprehensive learning report for module"
+              f" '{active_mod['title']}' in {st.session_state['target_lang']} at"
+              f" level {st.session_state['current_level']}. Provide the response"
+              " in Turkish with these exact prefixes:\nKELIMELER_VE_KALIPLAR:"
+              " (List all specific words, vocabulary items, and sentence"
+              " patterns learned in this module)\nDIL_BILGISI: (Specify the exact"
+              " grammar terms, structures, and rules learned)\nBOLUM_PORTRESI:"
+              " (Write a vivid, atmospheric module portrait describing the"
+              " thematic scope, mindset, and context of this specific module)"
+          )
+          try:
+            res = client.chat.completions.create(
+                model="llama-3.3-70b-versatile",
+                messages=[{"role": "user", "content": report_prompt}],
+                temperature=0.4,
+            )
+            report_text = res.choices[0].message.content
+
+            k_v_k = "Modül kelime ve kalıpları başarıyla işlendi."
+            d_b = active_mod["skill"]
+            b_p = (
+                "Bu modül, hedef dil yetkinliğini artırmaya yönelik özel bir"
+                " tema sunar."
+            )
+
+            for line in report_text.split("\n"):
+              if "KELIMELER_VE_KALIPLAR:" in line:
+                k_v_k = line.replace("KELIMELER_VE_KALIPLAR:", "").strip()
+              elif "DIL_BILGISI:" in line:
+                d_b = line.replace("DIL_BILGISI:", "").strip()
+              elif "BOLUM_PORTRESI:" in line:
+                b_p = line.replace("BOLUM_PORTRESI:", "").strip()
+          except Exception:
+            k_v_k = "Kelime ve kalıplar başarıyla tamamlandı."
+            d_b = active_mod["skill"]
+            b_p = "Bu bölüm, öğrencinin akıcılık yolculuğunda kilit bir duraktır."
+
         st.session_state["current_report"] = {
             "module_title": active_mod["title"],
             "learned_words": active_mod["words"],
             "user_text": user_writing,
             "status": "Başarıyla Tamamlandı",
+            "kelimeler_ve_kaliplar": k_v_k,
+            "dil_bilgisi": d_b,
+            "bolum_portresi": b_p,
         }
 
         if active_mod["status"] != "Tamamlandı":
@@ -737,36 +736,44 @@ elif st.session_state["stage"] == "learning":
         st.session_state["stage"] = "report_card"
         st.rerun()
       else:
-        st.warning(
-            "Lütfen ilerlemek için metin kutusuna cümlelerinizi yazınız."
-        )
+        st.warning("Lütfen metin kutusuna cümlelerinizi yazınız.")
 
-# --- AŞAMA 6: BÖLÜM KARNESİ (REPORT CARD) ---
+# --- AŞAMA 6: BÖLÜM KARNESİ VE PORTRESİ ---
 elif st.session_state["stage"] == "report_card":
   report = st.session_state["current_report"]
 
-  st.title("🎖️ RESMİ BÖLÜM KARNESİ VE DEĞERLENDİRME RAPORU")
+  st.title("🎖️ RESMİ BÖLÜM KARNESİ VE PORTRESİ")
   st.balloons()
 
   st.markdown(
       f"""
     <div style="border: 3px solid #2e7d32; padding: 25px; border-radius: 12px; background-color: #f1f8e9;">
-        <h3 style="color: #1b5e20; text-align: center;">📚 LingoFlow Pro JSON Eğitim Karnesi</h3>
+        <h3 style="color: #1b5e20; text-align: center;">📚 LingoFlow Pro Modül Karne Raporu</h3>
         <hr>
         <p><b>Öğrenci Adı:</b> {st.session_state['user_name']}</p>
-        <p><b>Hedef Dil / Seviye / Profil:</b> {st.session_state['target_lang']} ({st.session_state['current_level']}) - {st.session_state['personality_profile']}</p>
+        <p><b>Hedef Dil / Seviye:</b> {st.session_state['target_lang']} ({st.session_state['current_level']}) - {st.session_state['personality_profile']}</p>
         <p><b>Tamamlanan Modül:</b> {report.get('module_title')}</p>
         <p><b>Durum:</b> <span style="color: green; font-weight: bold;">{report.get('status')}</span></p>
         <hr>
-        <p><b>✨ Kazanımlar ve İstatistikler:</b></p>
-        <ul>
-            <li>Bu derste eklenen dağarcık: <b>+{report.get('learned_words')} kelime ve kalıp</b></li>
-            <li>Toplam biriken kelime: <b>{st.session_state['total_words']} kelime</b></li>
-            <li>Yazdığınız Pratik Cümle: <i>"{report.get('user_text')}"</i></li>
-        </ul>
-        <p style="text-align: center; color: #388e3c; font-weight: bold; margin-top: 20px;">
-            Harika bir çalışma çıkardınız! JSON tabanlı modül başarıyla işlendi.
-        </p>
+        
+        <h4 style="color: #2e7d32;">🎨 Bölümün Portresi</h4>
+        <div style="background: #ffffff; padding: 15px; border-radius: 8px; border-left: 5px solid #2e7d32; margin-bottom: 15px;">
+            {report.get('bolum_portresi')}
+        </div>
+
+        <h4 style="color: #2e7d32;">📖 Öğrenilen Kelimeler ve Cümle Kalıpları</h4>
+        <div style="background: #ffffff; padding: 15px; border-radius: 8px; border-left: 5px solid #ffb300; margin-bottom: 15px;">
+            {report.get('kelimeler_ve_kaliplar')}
+        </div>
+
+        <h4 style="color: #2e7d32;">⚙️ Öğrenilen Dil Bilgisi Terimleri ve Yapılar</h4>
+        <div style="background: #ffffff; padding: 15px; border-radius: 8px; border-left: 5px solid #1976d2; margin-bottom: 15px;">
+            {report.get('dil_bilgisi')}
+        </div>
+        
+        <hr>
+        <p><b>✨ Kazanım İstatistikleri:</b> Bu derste eklenen dağarcık: <b>+{report.get('learned_words')} kelime</b> | Toplam Biriken: <b>{st.session_state['total_words']} kelime</b></p>
+        <p><b>Yazdığınız Pratik Cümle:</b> <i>"{report.get('user_text')}"</i></p>
     </div>
     """,
       unsafe_allow_html=True,
@@ -787,7 +794,7 @@ elif st.session_state["stage"] == "report_card":
       st.session_state["stage"] = "certificate"
       st.rerun()
 
-# --- AŞAMA 7: KURS BİTİRME SERTİFİKASI ---
+# --- AŞAMA 7: KURS SERTİFİKASI ---
 elif st.session_state["stage"] == "certificate":
   st.title("🏆 MÜKEMMEL BAŞARI - SERTİFİKA ALANI")
   st.balloons()
